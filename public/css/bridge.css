@@ -1,0 +1,248 @@
+/*
+ * bridge.css - v2
+ * ONLY defines legacy-specific classes that don't exist in Tabler/Bootstrap.
+ * All Bootstrap native classes (card, btn, form-control, badge, table, etc.)
+ * are handled by Tabler's CSS — we must NOT redefine them here.
+ */
+
+/* =====================================================
+   LAYOUT: Suppress old sidebar elements
+   ===================================================== */
+.app-wrapper { display: block !important; }
+.sidebar     { display: none !important; }
+.main-content { margin-left: 0 !important; padding: 0 !important; }
+.topbar      { display: none !important; }
+
+/* =====================================================
+   LEGACY BUTTONS (extras not in Bootstrap)
+   ===================================================== */
+.btn-teal    { background: #0ca678; color: #fff !important; border-color: #0ca678; }
+.btn-teal:hover    { background: #0a906a; color: #fff; }
+.btn-orange  { background: #f76707; color: #fff !important; border-color: #f76707; }
+.btn-orange:hover  { background: #e05d00; color: #fff; }
+.btn-blue    { background: #3b82f6; color: #fff !important; border-color: #3b82f6; }
+.btn-blue:hover    { background: #2563eb; color: #fff; }
+.btn-ghost {
+  background: transparent; color: #64748b;
+  border: 1px solid #cbd5e1;
+}
+.btn-ghost:hover { background: #f1f5f9; color: #334155; }
+
+/* =====================================================
+   LEGACY BADGES (extras not in Bootstrap)
+   ===================================================== */
+.badge-blue   { background: rgba(59,130,246,0.12) !important; color: #1d4ed8 !important; }
+.badge-green  { background: rgba(47,179,68,0.12) !important;  color: #166534 !important; }
+.badge-orange { background: rgba(247,103,7,0.12) !important;  color: #9a3412 !important; }
+.badge-gray   { background: rgba(100,116,139,0.12) !important; color: #475569 !important; }
+.badge-teal   { background: rgba(12,166,120,0.12) !important; color: #065f46 !important; }
+.badge-red    { background: rgba(214,57,57,0.12) !important;  color: #991b1b !important; }
+.badge-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  display: inline-block;
+  margin-right: 2px;
+}
+
+/* =====================================================
+   LEGACY PAGE HEADER
+   ===================================================== */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.page-header-left > h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+.page-header-left > p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 2px 0 0;
+}
+
+/* =====================================================
+   LEGACY TABS (used in rawat jalan, lab, etc.)
+   ===================================================== */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 20px;
+  gap: 4px;
+}
+.tab-btn {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tab-btn:hover { color: #206bc4; }
+.tab-btn.active { color: #206bc4; border-bottom-color: #206bc4; }
+/* Legacy simrs.js tabs: only hide/show inside [data-tabs] containers */
+[data-tabs] .tab-content { display: none; }
+[data-tabs] .tab-content.active { display: block; }
+/* Bootstrap/Tabler native .tab-pane is handled by Tabler's own CSS — do NOT override here */
+
+/* =====================================================
+   LEGACY FILTER BAR
+   ===================================================== */
+.filter-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.input-group-text {
+  padding: 6px 10px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  color: #64748b;
+  display: flex; align-items: center;
+}
+.search-box .form-control { border-radius: 0 6px 6px 0; }
+
+/* =====================================================
+   LEGACY TABLE WRAPPER
+   ===================================================== */
+.table-wrapper { overflow-x: auto; }
+
+/* =====================================================
+   LEGACY TYPOGRAPHY
+   ===================================================== */
+.text-xs { font-size: 11px !important; }
+.text-sm { font-size: 12px !important; }
+.live-dot {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: #22c55e; font-size: 12px; font-weight: 600;
+}
+.live-dot::before {
+  content: ''; width: 8px; height: 8px;
+  background: #22c55e; border-radius: 50%;
+  animation: blink 1.2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+/* =====================================================
+   LEGACY STAT CARDS (dashboard - kept for compatibility)
+   ===================================================== */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card { display: flex; align-items: center; gap: 14px; border-radius: 10px; padding: 18px; background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.stat-icon svg { width: 22px; height: 22px; }
+.stat-icon.blue  { background: rgba(32,107,196,0.1); color: #206bc4; }
+.stat-icon.green { background: rgba(47,179,68,0.1);  color: #2fb344; }
+.stat-icon.orange{ background: rgba(247,103,7,0.1);  color: #f76707; }
+.stat-icon.purple{ background: rgba(132,90,223,0.1); color: #845adf; }
+.stat-icon.red   { background: rgba(214,57,57,0.1);  color: #d63939; }
+.stat-label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+.stat-value { font-size: 26px; font-weight: 800; color: #0f172a; line-height: 1; }
+.stat-trend { font-size: 11px; margin-top: 4px; display: flex; align-items: center; gap: 3px; }
+.stat-trend.up   { color: #2fb344; }
+.stat-trend.down { color: #d63939; }
+.stat-trend.neutral { color: #64748b; }
+.dashboard-grid { display: grid; grid-template-columns: 1fr 360px; gap: 20px; }
+@media (max-width: 992px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+/* =====================================================
+   BARE TABLE STYLES (legacy blades use raw <table> without .table class)
+   ===================================================== */
+table:not(.table-compact) { width: 100%; border-collapse: collapse; font-size: 13px; }
+table:not(.table-compact) thead { background: #f8fafc; }
+table:not(.table-compact) th {
+  padding: 10px 14px; text-align: left;
+  font-size: 11px; font-weight: 700;
+  color: #64748b; text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #e2e8f0;
+}
+table:not(.table-compact) td {
+  padding: 11px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+}
+table:not(.table-compact) tr:last-child td { border-bottom: none; }
+table:not(.table-compact) tr:hover td { background: #f8fafc; }
+
+/* =====================================================
+   LEGACY CARD HEADER HELPER (match Tabler card-header look)
+   ===================================================== */
+.card > .card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card > .card-header h3 { font-size: 15px; font-weight: 700; margin: 0; }
+
+/* =====================================================
+   DENSE COMPACT COMPONENTS (detail_registered)
+   ===================================================== */
+.dashboard-container { display: flex; gap: 12px; }
+.compact-card { border-radius: 8px; border: 1px solid #e2e8f0; padding: 0; background: #fff; }
+.card-header-sm { padding: 6px 12px; background: #f1f5f9; font-weight: 700; font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; }
+.card-body-sm { padding: 10px; }
+.list-scroll { overflow-y: auto; }
+.list-scroll::-webkit-scrollbar { width: 4px; }
+.list-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.info-item { font-size: 12px; margin-bottom: 4px; display: flex; gap: 5px; }
+.info-item span { color: #64748b; font-weight: 500; width: 60px; flex-shrink: 0; }
+.alert-item { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 4px; }
+.id-item { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
+.soap-entry-compact { padding: 8px; border-bottom: 1px solid #e2e8f0; }
+.soap-date { font-weight: 700; font-size: 11px; color: #206bc4; }
+.soap-examiner { font-size: 10px; color: #64748b; }
+.soap-text { font-size: 12px; line-height: 1.4; color: #334155; }
+.table-compact { width: 100%; border-collapse: collapse; font-size: 11px; }
+.table-compact th { text-align: left; padding: 6px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: 700; }
+.table-compact td { padding: 6px; border-bottom: 1px solid #f1f5f9; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.status-dot.green { background: #22c55e; }
+.status-dot.blue  { background: #3b82f6; }
+.btn-add-inline { width: 100%; padding: 6px; background: #f8fafc; border: none; color: #206bc4; font-weight: 700; font-size: 11px; cursor: pointer; }
+.btn-add-inline:hover { background: #f1f5f9; }
+.form-control-dash { width: 100%; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-family: inherit; }
+.form-group-sm label { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 2px; display: block; }
+.vital-grid-compact { display: flex; gap: 10px; margin: 8px 0; }
+.v-item { flex: 1; display: flex; align-items: center; gap: 5px; }
+.v-item label { font-size: 10px; font-weight: 700; color: #64748b; }
+.v-input { width: 100%; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 0 6px; font-size: 12px; }
+.grid-2-compact { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dpjp-item-sm { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
+.dpjp-item-sm.main { font-weight: 700; }
+.profile-main { margin-bottom: 8px; }
+.main-tabs-sm { display: flex; border-bottom: 1px solid #e2e8f0; }
+.tab-btn-sm { flex: 1; padding: 10px; border: none; background: transparent; font-size: 12px; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; }
+.tab-btn-sm.active { color: #206bc4; border-bottom-color: #206bc4; }
+
+/* =====================================================
+   LEGACY MODAL
+   ===================================================== */
+.modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; }
+.modal-content-sm { background:#fff; padding:20px; border-radius:8px; width:350px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+
+/* =====================================================
+   MISC
+   ===================================================== */
+.btn-group { display: flex; gap: 4px; }
+.truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.italic { font-style: italic; }
+.timeline { padding-left: 0; }
+.timeline-item { position: relative; padding: 0 0 16px 28px; border-left: 2px solid #e2e8f0; }
+.timeline-item:last-child { border-left-color: transparent; }
+.timeline-dot { position: absolute; left: -7px; top: 2px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; }
+.timeline-content .title { font-size: 13px; font-weight: 600; color: #0f172a; }
+.timeline-content .sub { font-size: 12px; color: #64748b; }
+.timeline-content .time { font-size: 11px; color: #94a3b8; margin-top: 2px; }
