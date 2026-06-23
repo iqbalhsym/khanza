@@ -62,7 +62,7 @@ class DashboardController extends Controller
         $stats['farmasi_diff'] = $stats['farmasi'] - $yesterday_farmasi;
 
         // 6. Recent Activities
-        $recent_activities = DB::table('reg_periksa')
+        $recent_activities = DB::table(DB::raw('reg_periksa FORCE INDEX (reg_periksa_tgl_jam_index)'))
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
             ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
             ->join('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')

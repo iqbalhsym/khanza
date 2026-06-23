@@ -41,6 +41,10 @@
 <form action="{{ url('/rawat-jalan/pemeriksaan/store') }}" method="POST">
     @csrf
     <input type="hidden" name="no_rawat" value="{{ $reg->no_rawat }}">
+    @if($pemeriksaan)
+        <input type="hidden" name="tgl_perawatan" value="{{ $pemeriksaan->tgl_perawatan }}">
+        <input type="hidden" name="jam_rawat" value="{{ $pemeriksaan->jam_rawat }}">
+    @endif
 
     <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
         

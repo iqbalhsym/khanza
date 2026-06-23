@@ -26,7 +26,7 @@
 <div class="row row-cards">
   <!-- Stat Card: Total Pasien -->
   <div class="col-sm-6 col-lg-3">
-    <div class="card card-sm">
+    <div class="card card-sm dashboard-stat-card">
       <div class="card-body">
         <div class="row align-items-center">
           <div class="col-auto">
@@ -49,7 +49,7 @@
 
   <!-- Stat Card: Rawat Jalan -->
   <div class="col-sm-6 col-lg-3">
-    <div class="card card-sm">
+    <div class="card card-sm dashboard-stat-card">
       <div class="card-body">
         <div class="row align-items-center">
           <div class="col-auto">
@@ -72,7 +72,7 @@
 
   <!-- Stat Card: Rawat Inap -->
   <div class="col-sm-6 col-lg-3">
-    <div class="card card-sm">
+    <div class="card card-sm dashboard-stat-card">
       <div class="card-body">
         <div class="row align-items-center">
           <div class="col-auto">
@@ -95,7 +95,7 @@
 
   <!-- Stat Card: Farmasi -->
   <div class="col-sm-6 col-lg-3">
-    <div class="card card-sm">
+    <div class="card card-sm dashboard-stat-card">
       <div class="card-body">
         <div class="row align-items-center">
           <div class="col-auto">

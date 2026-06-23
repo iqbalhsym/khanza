@@ -68,10 +68,13 @@ class PemeriksaanController extends Controller
                 $nip = '-';
             }
 
+            $tgl_perawatan = $request->tgl_perawatan ?: date('Y-m-d');
+            $jam_rawat = $request->jam_rawat ?: date('H:i:s');
+
             $data = [
                 'no_rawat'      => $request->no_rawat,
-                'tgl_perawatan' => date('Y-m-d'),
-                'jam_rawat'     => date('H:i:s'),
+                'tgl_perawatan' => $tgl_perawatan,
+                'jam_rawat'     => $jam_rawat,
                 'suhu_tubuh'    => $request->suhu_tubuh ?: '-',
                 'tensi'         => $request->tensi ?: '-',
                 'nadi'          => $request->nadi ?: '-',
@@ -92,10 +95,13 @@ class PemeriksaanController extends Controller
                 'nip'           => $nip
             ];
 
-            // Insert atau Update jika data sudah ada
-            $exists = DB::table('pemeriksaan_ralan')->where('no_rawat', $request->no_rawat)->exists();
-            if ($exists) {
-                DB::table('pemeriksaan_ralan')->where('no_rawat', $request->no_rawat)->update($data);
+            // If both tgl_perawatan and jam_rawat are passed, update that specific record
+            if ($request->filled('tgl_perawatan') && $request->filled('jam_rawat')) {
+                DB::table('pemeriksaan_ralan')
+                    ->where('no_rawat', $request->no_rawat)
+                    ->where('tgl_perawatan', $request->tgl_perawatan)
+                    ->where('jam_rawat', $request->jam_rawat)
+                    ->update($data);
             } else {
                 DB::table('pemeriksaan_ralan')->insert($data);
             }
@@ -103,7 +109,7 @@ class PemeriksaanController extends Controller
             // Update status di reg_periksa menjadi 'Sudah' (Sudah Diperiksa)
             DB::table('reg_periksa')->where('no_rawat', $request->no_rawat)->update(['stts' => 'Sudah']);
 
-            return redirect('/rawat-jalan')->with('success', 'Pemeriksaan SOAP berhasil disimpan.');
+            return redirect('/rawat-jalan/registered/' . urlencode($request->no_rawat))->with('success', 'Pemeriksaan SOAP berhasil disimpan.');
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal menyimpan pemeriksaan: ' . $e->getMessage());

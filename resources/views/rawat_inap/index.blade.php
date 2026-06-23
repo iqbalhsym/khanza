@@ -62,7 +62,7 @@
     </div>
     <div class="card">
         <div class="table-wrapper">
-            <table>
+            <table class="table-nowrap">
                 <thead>
                     <tr>
                         <th>No. RM</th>
@@ -114,7 +114,7 @@
         </div>
         @endif
     </div>
-</div>v>
+</div>
 
   <!-- Tab Peta Kamar -->
   <div id="tab-kamar" class="tab-content">

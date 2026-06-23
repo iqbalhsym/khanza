@@ -34,137 +34,81 @@
     <span>🏠 <strong>{{ Str::limit($data->alamat,35) }}</strong></span>
   </div>
   <div class="ms-auto d-flex gap-2 align-items-center">
-    <span class="badge" style="background:{{ $data->jaminan=='BPJS'?'#0ca678':'rgba(255,255,255,.25)' }};color:#fff;">💳 {{ $data->jaminan }}</span>
-    <a href="{{ url('/rawat-jalan') }}" class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);font-size:11px;">← Kembali</a>
-  </div>
-</div>
-
-{{-- ============ MAIN 3-COLUMN GRID (fills remaining viewport) ============ --}}
-<div class="d-flex gap-2" style="height:calc(100vh - 195px);overflow:hidden;">
-
-  {{-- ======================================================
-       COLUMN 1 – Patient Info (25%)
-       ====================================================== --}}
-  <div style="flex:0 0 24%;min-width:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
-
-    {{-- Person In Charge --}}
-    <div class="card card-sm" style="flex-shrink:0;">
-      <div class="card-header py-1 px-2" style="background:#f0f4ff;">
-        <span class="fw-bold text-uppercase" style="font-size:10px;color:#3b5998;letter-spacing:.5px;">Person In Charge</span>
-      </div>
-      <div class="card-body p-2">
-        @foreach([
-          ['Treatment Type', $data->p_jawab??'-'],
-          ['Registered Date', $data->tgl_registrasi.' '.$data->jam_reg],
-          ['Episode Location', $data->nm_poli],
-          ['Doctor In Charge 1', $data->dpjp_1],
-        ] as [$label,$val])
-        <div class="d-flex gap-1 mb-1" style="font-size:11px;">
-          <span class="text-muted" style="flex:0 0 95px;">{{ $label }}</span>
-          <span class="fw-medium">{{ $val }}</span>
+    {{-- PIC & DPJP Dropdown --}}
+    <div class="dropdown">
+      <button class="btn btn-sm d-flex align-items-center gap-1 dropdown-toggle" type="button" id="dropdownPIC" data-bs-toggle="dropdown" aria-expanded="false" 
+              style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);font-size:11px;padding: 4px 8px;">
+        📋 PIC &amp; DPJP Info
+      </button>
+      <div class="dropdown-menu dropdown-menu-end p-3 shadow-lg border-0" aria-labelledby="dropdownPIC" style="width:340px; border-radius: 8px; font-size:12px; color:#1e293b; z-index: 1050;">
+        <div class="fw-bold text-uppercase mb-2 pb-1 border-bottom text-primary" style="font-size:10px; letter-spacing:0.5px;">
+          👥 Person In Charge (PIC)
         </div>
-        @endforeach
-        <div class="d-flex gap-1 align-items-center mt-1 pt-1" style="border-top:1px solid #e2e8f0;">
-          <span class="text-muted" style="font-size:10px;flex:0 0 95px;">Total Invoice</span>
-          <span class="fw-bold text-danger" style="font-size:13px;">Rp&nbsp;{{ number_format($data->total_invoice,0,',','.') }}</span>
+        <div class="mb-3">
+          @foreach([
+            ['Treatment Type', $data->p_jawab??'-'],
+            ['Registered Date', $data->tgl_registrasi.' '.$data->jam_reg],
+            ['Episode Location', $data->nm_poli],
+            ['Doctor In Charge 1', $data->dpjp_1],
+          ] as [$label,$val])
+          <div class="d-flex justify-content-between mb-1" style="font-size:11px;">
+            <span class="text-muted">{{ $label }}:</span>
+            <span class="fw-semibold text-end">{{ $val }}</span>
+          </div>
+          @endforeach
+          <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+            <span class="text-muted fw-medium" style="font-size:11px;">Total Invoice:</span>
+            <span class="fw-bold text-danger" style="font-size:14px;">Rp {{ number_format($data->total_invoice,0,',','.') }}</span>
+          </div>
         </div>
-      </div>
-    </div>
 
-    {{-- Research Info / DPJP --}}
-    <div class="card card-sm" style="flex-shrink:0;">
-      <div class="card-header py-1 px-2 d-flex justify-content-between align-items-center" style="background:#f0f4ff;">
-        <span class="fw-bold text-uppercase" style="font-size:10px;color:#3b5998;letter-spacing:.5px;">Research Info</span>
-        <button onclick="showModal('modal-dpjp')" class="btn btn-xs btn-outline-primary py-0 px-1" style="font-size:10px;">+&nbsp;Kelola</button>
-      </div>
-      <div class="card-body p-2">
-        <div class="mb-1" style="font-size:11px;">
-          <span class="text-muted">Jaminan: </span>
-          <span class="badge {{ $data->jaminan=='BPJS'?'bg-teal-lt':'bg-secondary-lt' }}">{{ $data->jaminan }}</span>
+        <div class="fw-bold text-uppercase d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom text-primary" style="font-size:10px; letter-spacing:0.5px;">
+          <span>🔬 Research Info &amp; DPJP</span>
+          <button onclick="showModal('modal-dpjp')" class="btn btn-xs btn-outline-primary py-0 px-1" style="font-size:9px; border-radius:3px;">+ Kelola</button>
         </div>
         <div style="font-size:11px;">
-          <div class="d-flex align-items-center gap-1 py-1 border-bottom">
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Jaminan:</span>
+            <span class="badge {{ $data->jaminan=='BPJS'?'bg-teal-lt':'bg-secondary-lt' }}">{{ $data->jaminan }}</span>
+          </div>
+          <div class="d-flex align-items-center justify-content-between py-1 border-bottom">
             <span class="badge bg-blue-lt" style="font-size:9px;">DPJP 1</span>
-            <span class="fw-medium">{{ $data->dpjp_1 }}</span>
+            <span class="fw-medium text-end">{{ $data->dpjp_1 }}</span>
           </div>
           @foreach($dpjp_tambahan as $urutan => $dpjp)
-          <div class="d-flex align-items-center gap-1 py-1 border-bottom">
+          <div class="d-flex align-items-center justify-content-between py-1 border-bottom">
             <span class="badge bg-secondary-lt" style="font-size:9px;">DPJP {{ $urutan }}</span>
-            <span>{{ $dpjp->nm_dokter }}</span>
+            <span class="text-end">{{ $dpjp->nm_dokter }}</span>
           </div>
           @endforeach
         </div>
       </div>
     </div>
 
-    {{-- Allergies --}}
-    <div class="card card-sm" style="flex-shrink:0;border-color:#fca5a5 !important;">
-      <div class="card-header py-1 px-2 d-flex justify-content-between align-items-center" style="background:#fef2f2;border-color:#fca5a5;">
-        <span class="fw-bold text-uppercase" style="font-size:10px;color:#dc2626;letter-spacing:.5px;">⚠ Allergies</span>
-        <button onclick="showModal('modal-allergy')" class="btn btn-xs py-0 px-1" style="font-size:10px;color:#dc2626;border:1px solid #fca5a5;background:#fff5f5;">+ New</button>
-      </div>
-      <div style="max-height:110px;overflow-y:auto;">
-        @forelse($allergies as $alg)
-        <div class="d-flex align-items-center gap-1 px-2 py-1 border-bottom" style="font-size:11px;">
-          <span class="fw-medium flex-fill">{{ $alg->allergies }}</span>
-          <span class="text-muted" style="font-size:10px;">{{ $alg->type_reaction }}</span>
-          <span class="badge bg-{{ $alg->severity==='Severe'?'danger':($alg->severity==='Moderate'?'warning':'success') }}-lt ms-1" style="font-size:9px;">{{ $alg->severity }}</span>
-          <form action="{{ url('/rawat-jalan/registered/delete-allergy/'.$alg->id) }}" method="POST" class="ms-1" onsubmit="return confirm('Hapus?')">
-            @csrf @method('DELETE')
-            <button class="btn btn-sm p-0" style="color:#ef4444;font-size:13px;line-height:1;background:none;border:none;">×</button>
-          </form>
-        </div>
-        @empty
-        <div class="p-2 text-muted fst-italic" style="font-size:11px;">Tidak ada alergi tercatat.</div>
-        @endforelse
-      </div>
-    </div>
+    <span class="badge" style="background:{{ $data->jaminan=='BPJS'?'#0ca678':'rgba(255,255,255,.25)' }};color:#fff;">💳 {{ $data->jaminan }}</span>
+    <a href="{{ url('/rawat-jalan') }}" class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);font-size:11px;">← Kembali</a>
+  </div>
+</div>
 
-    {{-- Patient Identification --}}
-    <div class="card card-sm" style="flex:1;min-height:0;display:flex;flex-direction:column;">
-      <div class="card-header py-1 px-2 d-flex justify-content-between align-items-center" style="background:#f8fafc;flex-shrink:0;">
-        <span class="fw-bold text-uppercase" style="font-size:10px;color:#64748b;letter-spacing:.5px;">Identification</span>
-        <button onclick="showModal('modal-id')" class="btn btn-xs py-0 px-1" style="font-size:10px;color:#206bc4;border:1px solid #bfdbfe;background:#eff6ff;">+ New</button>
-      </div>
-      <div style="flex:1;overflow-y:auto;">
-        @forelse($identifications as $pid)
-        <div class="px-2 py-1 border-bottom" style="font-size:11px;">
-          <div class="d-flex align-items-start gap-1">
-            <div class="flex-fill">
-              <div class="fw-medium">{{ $pid->type }}</div>
-              <div class="text-muted">{{ $pid->result??'-' }} &bull; {{ $pid->examiner_name }}</div>
-              <div class="text-muted" style="font-size:10px;">{{ $pid->transaction_date }}</div>
-            </div>
-            <form action="{{ url('/rawat-jalan/registered/delete-identification/'.$pid->id) }}" method="POST" onsubmit="return confirm('Hapus?')">
-              @csrf @method('DELETE')
-              <button class="btn btn-sm p-0 mt-1" style="color:#ef4444;font-size:14px;line-height:1;background:none;border:none;">×</button>
-            </form>
-          </div>
-        </div>
-        @empty
-        <div class="p-2 text-muted fst-italic" style="font-size:11px;">Belum ada data identifikasi.</div>
-        @endforelse
-      </div>
-    </div>
-
-  </div>{{-- end col 1 --}}
+{{-- ============ MAIN 3-COLUMN GRID (fills remaining viewport) ============ --}}
+<div class="d-flex gap-2" style="height:calc(100vh - 135px);overflow:hidden;">
 
   {{-- ======================================================
-       COLUMN 2 – CPPT & SOAP (48%)
+       COLUMN 1 – CPPT & SOAP (40%)
        ====================================================== --}}
-  <div style="flex:0 0 48%;min-width:0;display:flex;flex-direction:column;gap:8px;overflow:hidden;">
+  <div style="flex:0 0 40%;min-width:0;display:flex;flex-direction:column;gap:0;">
 
     {{-- Main Clinical Tab Nav --}}
-    <div class="card card-sm p-0" style="flex-shrink:0; margin-top:20px;">
-      <ul class="nav nav-tabs card-header-tabs px-2 pt-1 mb-0" id="mainTabNav">
-        <li class="nav-item"><a class="nav-link active py-1 px-3" style="font-size:12px;" href="#" onclick="switchTab('main','tab-cppt',this);return false;">📋 CPPT</a></li>
-        <li class="nav-item"><a class="nav-link py-1 px-3" style="font-size:12px;" href="#" onclick="switchTab('main','tab-assessment',this);return false;">🩺 Assessment</a></li>
-        <li class="nav-item"><a class="nav-link py-1 px-3" style="font-size:12px;" href="#" onclick="switchTab('main','tab-forms',this);return false;">📎 Forms</a></li>
+    <div style="flex-shrink:0;background:#fff;border-bottom:2px solid #e2e8f0;padding-top:2px;">
+      <ul class="nav px-2" id="mainTabNav" style="display:flex;gap:4px;list-style:none;margin:0;padding-bottom:0;">
+        <li><a class="nav-tab-link active" href="#" onclick="switchTab('main','tab-cppt',this);return false;" style="display:inline-block;padding:6px 14px;font-size:12px;font-weight:600;color:#206bc4;border:1px solid #c8d8f0;border-bottom:2px solid #fff;background:#fff;border-radius:6px 6px 0 0;text-decoration:none;margin-bottom:-2px;">📋 CPPT</a></li>
+        <li><a class="nav-tab-link" href="#" onclick="switchTab('main','tab-assessment',this);return false;" style="display:inline-block;padding:6px 14px;font-size:12px;font-weight:500;color:#64748b;border:1px solid transparent;border-bottom:none;background:transparent;border-radius:6px 6px 0 0;text-decoration:none;margin-bottom:-2px;">🩺 Assessment</a></li>
+        <li><a class="nav-tab-link" href="#" onclick="switchTab('main','tab-forms',this);return false;" style="display:inline-block;padding:6px 14px;font-size:12px;font-weight:500;color:#64748b;border:1px solid transparent;border-bottom:none;background:transparent;border-radius:6px 6px 0 0;text-decoration:none;margin-bottom:-2px;">📎 Forms</a></li>
       </ul>
     </div>
 
     {{-- Main Clinical Tab Content (fills remaining height) --}}
-    <div id="main-tab-content" style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;">
+    <div id="main-tab-content" style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;margin-top:8px;">
 
       {{-- CPPT TAB --}}
       <div class="ctab-panel" id="tab-cppt" style="flex:1;display:flex;flex-direction:column;gap:8px;overflow:hidden;">
@@ -195,28 +139,28 @@
                   <div class="row g-1 mb-1">
                     <div class="col-12">
                       <label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Subjective (Keluhan)</label>
-                      <textarea name="keluhan" rows="2" class="form-control form-control-sm" placeholder="Keluhan utama..."></textarea>
+                      <textarea name="keluhan" rows="2" class="form-control form-control-sm" placeholder="Keluhan utama..." required></textarea>
                     </div>
                   </div>
                   <div class="row g-1 mb-1">
                     <div class="col-4"><label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Tensi</label><input type="text" name="tensi" class="form-control form-control-sm" placeholder="mmHg"></div>
                     <div class="col-4"><label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Nadi</label><input type="text" name="nadi" class="form-control form-control-sm" placeholder="x/mnt"></div>
-                    <div class="col-4"><label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Suhu</label><input type="text" name="suhu" class="form-control form-control-sm" placeholder="°C"></div>
+                    <div class="col-4"><label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Suhu</label><input type="text" name="suhu_tubuh" class="form-control form-control-sm" placeholder="°C"></div>
                   </div>
                   <div class="row g-1 mb-1">
                     <div class="col-12">
                       <label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Objective</label>
-                      <textarea name="pemeriksaan" rows="2" class="form-control form-control-sm" placeholder="Pemeriksaan fisik..."></textarea>
+                      <textarea name="pemeriksaan" rows="2" class="form-control form-control-sm" placeholder="Pemeriksaan fisik..." required></textarea>
                     </div>
                   </div>
                   <div class="row g-1 mb-1">
                     <div class="col-6">
                       <label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Assessment</label>
-                      <textarea name="penilaian" rows="2" class="form-control form-control-sm"></textarea>
+                      <textarea name="penilaian" rows="2" class="form-control form-control-sm" required></textarea>
                     </div>
                     <div class="col-6">
                       <label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Plan / RTL</label>
-                      <textarea name="rtl" rows="2" class="form-control form-control-sm"></textarea>
+                      <textarea name="rtl" rows="2" class="form-control form-control-sm" required></textarea>
                     </div>
                   </div>
                   <div class="d-flex align-items-center gap-2">
@@ -279,7 +223,7 @@
   </div>{{-- end col 2 --}}
 
   {{-- ======================================================
-       COLUMN 3 – Lab, Rad, Actions (28%)
+       COLUMN 2 – Clinical Details & Actions (60%)
        ====================================================== --}}
   <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;overflow:hidden;">
 
@@ -365,30 +309,69 @@
         <span class="badge bg-success-lt" style="font-size:10px;">{{ $rad_results->count() }}</span>
       </div>
       <div style="flex:1;overflow-y:auto;">
-        <table style="width:100%;border-collapse:collapse;font-size:11px;">
-          <thead style="background:#f0fdf4;position:sticky;top:0;">
-            <tr>
-              <th style="padding:4px 8px;color:#64748b;font-weight:700;border-bottom:1px solid #bbf7d0;">Tanggal</th>
-              <th style="padding:4px 8px;color:#64748b;font-weight:700;border-bottom:1px solid #bbf7d0;">Jenis</th>
-              <th style="padding:4px 8px;color:#64748b;font-weight:700;border-bottom:1px solid #bbf7d0;">Dokter</th>
-            </tr>
-          </thead>
-          <tbody>
-            @forelse($rad_results as $rad)
-            <tr>
-              <td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;color:#64748b;white-space:nowrap;">{{ $rad->tgl_periksa }}</td>
-              <td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-weight:500;">{{ $rad->item_name }}</td>
-              <td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;color:#64748b;">{{ $rad->examiner }}</td>
-            </tr>
-            @empty
-            <tr><td colspan="3" style="padding:12px;text-align:center;color:#94a3b8;font-style:italic;">Belum ada data radiologi.</td></tr>
-            @endforelse
-          </tbody>
-        </table>
+        @forelse($rad_results as $rad)
+        <div class="px-2 py-1.5 border-bottom d-flex align-items-center" style="font-size:11px;">
+          <div style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+            <span class="text-muted me-2" style="font-size:10px;">{{ $rad->tgl_periksa }}</span>
+            <span class="fw-semibold text-dark">{{ $rad->item_name }}</span>
+            <span class="text-muted ms-2" style="font-size:10px;">({{ $rad->examiner }})</span>
+          </div>
+        </div>
+        @empty
+        <div class="p-3 text-center text-muted fst-italic" style="font-size:11px;">Belum ada data radiologi.</div>
+        @endforelse
       </div>
     </div>
 
-  </div>{{-- end col 3 --}}
+    {{-- Allergies --}}
+    <div class="card card-sm" style="flex-shrink:0;border-color:#fca5a5 !important;">
+      <div class="card-header py-1 px-2 d-flex justify-content-between align-items-center" style="background:#fef2f2;border-color:#fca5a5;">
+        <span class="fw-bold text-uppercase" style="font-size:10px;color:#dc2626;letter-spacing:.5px;">⚠ Allergies</span>
+        <button onclick="showModal('modal-allergy')" class="btn btn-xs py-0 px-1" style="font-size:10px;color:#dc2626;border:1px solid #fca5a5;background:#fff5f5;">+ New</button>
+      </div>
+      <div style="max-height:110px;overflow-y:auto;">
+        @forelse($allergies as $alg)
+        <div class="d-flex align-items-center gap-1 px-2 py-1 border-bottom" style="font-size:11px;">
+          <span class="fw-medium flex-fill">{{ $alg->allergies }}</span>
+          <span class="text-muted" style="font-size:10px;">{{ $alg->type_reaction }}</span>
+          <span class="badge bg-{{ $alg->severity==='Severe'?'danger':($alg->severity==='Moderate'?'warning':'success') }}-lt ms-1" style="font-size:9px;">{{ $alg->severity }}</span>
+          <form action="{{ url('/rawat-jalan/registered/delete-allergy/'.$alg->id) }}" method="POST" class="ms-1" onsubmit="return confirm('Hapus?')">
+            @csrf @method('DELETE')
+            <button class="btn btn-sm p-0" style="color:#ef4444;font-size:13px;line-height:1;background:none;border:none;">×</button>
+          </form>
+        </div>
+        @empty
+        <div class="p-2 text-muted fst-italic" style="font-size:11px;">Tidak ada alergi tercatat.</div>
+        @endforelse
+      </div>
+    </div>
+
+    {{-- Patient Identification --}}
+    <div class="card card-sm" style="flex:1;min-height:0;display:flex;flex-direction:column;">
+      <div class="card-header py-1 px-2 d-flex justify-content-between align-items-center" style="background:#f8fafc;flex-shrink:0;">
+        <span class="fw-bold text-uppercase" style="font-size:10px;color:#64748b;letter-spacing:.5px;">Identification</span>
+        <button onclick="showModal('modal-id')" class="btn btn-xs py-0 px-1" style="font-size:10px;color:#206bc4;border:1px solid #bfdbfe;background:#eff6ff;">+ New</button>
+      </div>
+      <div style="flex:1;overflow-y:auto;">
+        @forelse($identifications as $pid)
+        <div class="px-2 py-1 border-bottom" style="font-size:11px;">
+          <div class="d-flex align-items-start gap-1">
+            <div class="flex-fill">
+              <div class="fw-medium">{{ $pid->type }}</div>
+              <div class="text-muted">{{ $pid->result??'-' }} &bull; {{ $pid->examiner_name }}</div>
+              <div class="text-muted" style="font-size:10px;">{{ $pid->transaction_date }}</div>
+            </div>
+            <form action="{{ url('/rawat-jalan/registered/delete-identification/'.$pid->id) }}" method="POST" onsubmit="return confirm('Hapus?')">
+              @csrf @method('DELETE')
+              <button class="btn btn-sm p-0 mt-1" style="color:#ef4444;font-size:14px;line-height:1;background:none;border:none;">×</button>
+            </form>
+          </div>
+        </div>
+        @empty
+        <div class="p-2 text-muted fst-italic" style="font-size:11px;">Belum ada data identifikasi.</div>
+        @endforelse
+      </div>
+    </div>
 
 </div>{{-- end main grid --}}
 
@@ -500,10 +483,30 @@ function switchTab(group, targetId, clickedLink) {
   // Show target
   const target = document.getElementById(targetId);
   if (target) target.style.display = 'flex';
-  // Update active link style
-  const navId = isMain ? 'mainTabNav' : 'subTabNav';
-  document.querySelectorAll('#' + navId + ' .nav-link').forEach(a => a.classList.remove('active'));
-  if (clickedLink) clickedLink.classList.add('active');
+
+  if (isMain) {
+    // Custom main tab style reset (nav-tab-link)
+    const navId = 'mainTabNav';
+    document.querySelectorAll('#' + navId + ' .nav-tab-link').forEach(a => {
+      a.style.fontWeight = '500';
+      a.style.color = '#64748b';
+      a.style.border = '1px solid transparent';
+      a.style.borderBottom = 'none';
+      a.style.background = 'transparent';
+    });
+    if (clickedLink) {
+      clickedLink.style.fontWeight = '600';
+      clickedLink.style.color = '#206bc4';
+      clickedLink.style.border = '1px solid #c8d8f0';
+      clickedLink.style.borderBottom = '2px solid #fff';
+      clickedLink.style.background = '#fff';
+    }
+  } else {
+    // Sub-tab: still uses Tabler nav-link/active
+    const navId = 'subTabNav';
+    document.querySelectorAll('#' + navId + ' .nav-link').forEach(a => a.classList.remove('active'));
+    if (clickedLink) clickedLink.classList.add('active');
+  }
 }
 
 // Ensure initially visible panels show correctly on load

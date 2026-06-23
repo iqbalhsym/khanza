@@ -8,23 +8,59 @@ class RawatJalanController extends Controller
 {
     public function index(Request $request)
     {
-        $tanggal = $request->query('tanggal', date('Y-m-d'));
-        
+        $tgl_dari    = $request->query('tgl_dari',    date('Y-m-d'));
+        $tgl_sampai  = $request->query('tgl_sampai',  date('Y-m-d'));
+        $perPage     = $request->query('per_page', 20);
+
+        // Pastikan tgl_dari tidak lebih dari tgl_sampai
+        if ($tgl_dari > $tgl_sampai) {
+            $tgl_sampai = $tgl_dari;
+        }
+
+        // Global status counts for date range
+        $stats = \DB::table('reg_periksa')
+            ->whereBetween('tgl_registrasi', [$tgl_dari, $tgl_sampai])
+            ->selectRaw("
+                count(*) as total,
+                sum(case when stts = 'Belum' then 1 else 0 end) as belum,
+                sum(case when stts = 'Sudah' then 1 else 0 end) as sudah
+            ")
+            ->first();
+
+        $totalKunjungan = $stats->total ?? 0;
+        $totalBelum = $stats->belum ?? 0;
+        $totalSudah = $stats->sudah ?? 0;
+
         $antrian = \DB::table('reg_periksa')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
             ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
             ->join('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
             ->join('penjab', 'reg_periksa.kd_pj', '=', 'penjab.kd_pj')
-            ->where('reg_periksa.tgl_registrasi', $tanggal)
+            ->whereBetween('reg_periksa.tgl_registrasi', [$tgl_dari, $tgl_sampai])
             ->select(
-                'reg_periksa.no_rawat', 'reg_periksa.no_reg', 'reg_periksa.jam_reg', 'reg_periksa.stts',
+                'reg_periksa.no_rawat', 'reg_periksa.no_reg', 'reg_periksa.jam_reg',
+                'reg_periksa.stts', 'reg_periksa.tgl_registrasi',
                 'pasien.no_rkm_medis', 'pasien.nm_pasien', 'pasien.umur', 'pasien.jk',
                 'poliklinik.nm_poli', 'dokter.nm_dokter', 'penjab.png_jawab as jaminan'
             )
+            ->orderBy('reg_periksa.tgl_registrasi', 'desc')
             ->orderBy('reg_periksa.jam_reg', 'desc')
-            ->get();
+            ->paginate($perPage);
 
-        return view('rawat_jalan.index', compact('antrian', 'tanggal'));
+        // Append query parameters to pagination links
+        $antrian->appends([
+            'tgl_dari' => $tgl_dari,
+            'tgl_sampai' => $tgl_sampai,
+            'per_page' => $perPage
+        ]);
+
+        // Tetap kirim $tanggal untuk backward-compat (dipakai breadcrumb dll)
+        $tanggal = $tgl_dari;
+
+        return view('rawat_jalan.index', compact(
+            'antrian', 'tanggal', 'tgl_dari', 'tgl_sampai', 'perPage',
+            'totalKunjungan', 'totalBelum', 'totalSudah'
+        ));
     }
 
     public function create()
@@ -327,6 +363,29 @@ class RawatJalanController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Alergi berhasil ditambahkan.');
+    }
+
+    public function searchPasien(Request $request)
+    {
+        $q = trim($request->query('q', ''));
+        
+        if (strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $results = \DB::table('pasien')
+            ->leftJoin('penjab', 'pasien.kd_pj', '=', 'penjab.kd_pj')
+            ->select('pasien.*', 'penjab.png_jawab')
+            ->where(function($query) use ($q) {
+                $query->where('pasien.no_rkm_medis', 'like', '%' . $q . '%')
+                      ->orWhere('pasien.nm_pasien', 'like', '%' . $q . '%')
+                      ->orWhere('pasien.no_ktp', 'like', '%' . $q . '%');
+            })
+            ->orderByRaw('CAST(pasien.no_rkm_medis AS UNSIGNED) DESC')
+            ->limit(20)
+            ->get();
+
+        return response()->json($results);
     }
 
     public function deleteAllergy($id)

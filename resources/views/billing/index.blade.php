@@ -22,7 +22,7 @@
 
 <div class="card">
     <div class="table-wrapper">
-        <table class="table">
+        <table class="table table-nowrap">
             <thead>
                 <tr>
                     <th>No. Rawat</th>

@@ -1,22 +1,24 @@
 @extends('layout.app')
 
-@section('title', 'Data Dokter - Master Data')
-@section('page-title', 'Data Dokter')
+@section('title', 'Tarif Layanan - Master Data')
+@section('page-title', 'Tarif Layanan')
 @section('breadcrumb', 'Master Data')
 
 @section('content')
 
 <div class="page-header">
   <div class="page-header-left">
-    <h1>Data Dokter</h1>
-    <p>Kelola data dokter dan spesialisasi yang aktif</p>
+    <h1>Tarif Layanan & Tindakan</h1>
+    <p>Kelola tarif dan biaya tindakan medis di rumah sakit</p>
   </div>
   <div class="page-header-right">
     <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 13px;">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+        <rect x="2" y="4" width="20" height="16" rx="2" ry="2"/>
+        <line x1="12" y1="4" x2="12" y2="20"/>
+        <line x1="2" y1="12" x2="22" y2="12"/>
       </svg>
-      Total: {{ $data->total() }} dokter
+      Total: {{ $data->total() }} tarif
     </div>
   </div>
 </div>
@@ -26,7 +28,7 @@
         <div class="card-header bg-light">
             <div class="row align-items-center g-3">
                 <div class="col-md-8">
-                    <form method="GET" action="{{ url('/master/dokter') }}" class="d-flex align-items-center gap-2">
+                    <form method="GET" action="{{ url('/master/tarif') }}" class="d-flex align-items-center gap-2">
                         <div class="input-group" style="max-width: 400px;">
                             <span class="input-group-text bg-white border-end-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -37,10 +39,10 @@
                             <input type="text" 
                                    name="search" 
                                    class="form-control border-start-0" 
-                                   placeholder="Cari kode, nama dokter, atau spesialisasi..." 
+                                   placeholder="Cari Kode, Nama Tindakan, Poli, Penjamin..." 
                                    value="{{ $search ?? '' }}">
                             @if($search ?? '')
-                            <a href="{{ url('/master/dokter') }}" class="btn btn-outline-secondary" title="Hapus pencarian">
+                            <a href="{{ url('/master/tarif') }}" class="btn btn-outline-secondary" title="Hapus pencarian">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <line x1="18" y1="6" x2="6" y2="18"></line>
                                     <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -58,7 +60,7 @@
                     </form>
                 </div>
                 <div class="col-md-4">
-                    <form method="GET" action="{{ url('/master/dokter') }}" class="d-flex align-items-center justify-content-end gap-2">
+                    <form method="GET" action="{{ url('/master/tarif') }}" class="d-flex align-items-center justify-content-end gap-2">
                         @if($search ?? '')
                         <input type="hidden" name="search" value="{{ $search }}">
                         @endif
@@ -74,7 +76,7 @@
                 </div>
             </div>
         </div>
-
+        
         <!-- Search Results Info -->
         @if($search ?? '')
         <div class="alert alert-info border-0 rounded-0 mb-0" style="background-color: #e3f2fd; border-bottom: 1px solid #e9ecef !important;">
@@ -87,7 +89,7 @@
                     <span>Hasil pencarian untuk: <strong>"{{ $search }}"</strong></span>
                     <span class="badge bg-primary">{{ $data->total() }} data</span>
                 </div>
-                <a href="{{ url('/master/dokter') }}" class="btn btn-sm btn-outline-primary">
+                <a href="{{ url('/master/tarif') }}" class="btn btn-sm btn-outline-primary">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M3 6h18"></path>
                         <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
@@ -103,50 +105,58 @@
             <table class="table table-nowrap">
                 <thead>
                     <tr>
-                        <th>Kode Dokter</th>
-                        <th>Nama Dokter</th>
-                        <th>Spesialisasi</th>
-                        <th>No. Ijin Praktek</th>
-                        <th>Alamat</th>
-                        <th>Status</th>
+                        <th>Kode</th>
+                        <th>Nama Perawatan / Tindakan</th>
+                        <th>Poliklinik</th>
+                        <th>Penanggung Jawab</th>
+                        <th class="text-end">Tarif RS</th>
+                        <th class="text-end">Jasa Dr.</th>
+                        <th class="text-end">Jasa Pr.</th>
+                        <th class="text-end">BHP / KSO</th>
+                        <th class="text-end">Total Tarif</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if($data->count() > 0)
                         @foreach($data as $d)
                         <tr>
-                            <td><strong class="text-primary">{{ $d->kd_dokter }}</strong></td>
-                            <td style="font-weight:600;">{{ $d->nm_dokter }}</td>
-                            <td><span class="badge badge-blue">{{ $d->nm_sps ?? '-' }}</span></td>
-                            <td class="text-muted">{{ $d->no_ijn_praktek ?? '-' }}</td>
-                            <td class="text-sm">{{ Str::limit($d->almt_tgl ?? '-', 40) }}</td>
+                            <td><strong class="text-primary">{{ $d->kd_jenis_prw }}</strong></td>
+                            <td style="font-weight:600;">{{ $d->nm_perawatan }}</td>
                             <td>
-                                @if($d->status == '1')
-                                    <span class="badge badge-success">Aktif</span>
-                                @else
-                                    <span class="badge badge-gray">Tidak Aktif</span>
-                                @endif
+                                <span class="badge badge-blue">{{ $d->nm_poli ?? '-' }}</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-gray">{{ $d->png_jawab ?? '-' }}</span>
+                            </td>
+                            <td class="text-end text-muted">Rp {{ number_format($d->material, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format($d->tarif_tindakandr, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format($d->tarif_tindakanpr, 0, ',', '.') }}</td>
+                            <td class="text-end text-muted">Rp {{ number_format($d->bhp + $d->kso, 0, ',', '.') }}</td>
+                            <td class="text-endfw-bold text-primary" style="font-weight: 700;">
+                                Rp {{ number_format($d->material + $d->tarif_tindakandr + $d->tarif_tindakanpr + $d->bhp + $d->kso + $d->menejemen, 0, ',', '.') }}
                             </td>
                         </tr>
                         @endforeach
                     @else
                         <tr>
-                            <td colspan="6" class="text-center py-4">
+                            <td colspan="9" class="text-center py-4">
                                 @if($search ?? '')
                                     <div class="text-muted">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="mb-2">
                                             <circle cx="11" cy="11" r="8"></circle>
                                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                                         </svg>
-                                        <p class="mb-1">Tidak ditemukan data untuk "{{ $search }}"</p>
-                                        <small>Coba dengan kata kunci lain atau <a href="{{ url('/master/dokter') }}">tampilkan semua data</a></small>
+                                        <p class="mb-1">Tidak ditemukan data tarif untuk "{{ $search }}"</p>
+                                        <small>Coba dengan kata kunci lain atau <a href="{{ url('/master/tarif') }}">tampilkan semua data</a></small>
                                     </div>
                                 @else
                                     <div class="text-muted">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="mb-2">
-                                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                                            <rect x="2" y="4" width="20" height="16" rx="2" ry="2"/>
+                                            <line x1="12" y1="4" x2="12" y2="20"/>
+                                            <line x1="2" y1="12" x2="22" y2="12"/>
                                         </svg>
-                                        <p class="mb-1">Tidak ada data dokter</p>
+                                        <p class="mb-1">Tidak ada data tarif layanan</p>
                                     </div>
                                 @endif
                             </td>

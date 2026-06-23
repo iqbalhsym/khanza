@@ -49,7 +49,7 @@
 
   <!-- Form -->
   <div>
-    <form action="{{ url('/pendaftaran/update/'.$pasien->no_rkm_medis) }}" method="POST">
+    <form action="{{ url('/pendaftaran/update/'.$pasien->no_rkm_medis) }}" method="POST" enctype="multipart/form-data">
       @csrf
       @method('PUT')
 
@@ -138,6 +138,18 @@
             <div class="form-group">
               <label class="form-label">Pekerjaan</label>
               <input type="text" class="form-control" name="pekerjaan"value="{{ $pasien->pekerjaan }}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Data Pendukung (Maks 2MB)</label>
+              <input type="file" class="form-control" name="data_pendukung" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+              @if(isset($pasien->data_pendukung) && $pasien->data_pendukung)
+                <div style="margin-top: 8px; font-size: 12px;">
+                  <a href="{{ asset('uploads/data_pendukung/' . $pasien->data_pendukung) }}" target="_blank" style="color: var(--primary); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Lihat Dokumen saat ini
+                  </a>
+                </div>
+              @endif
             </div>
           </div>
         </div>

@@ -6,6 +6,11 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>@yield('title', 'Dashboard') – SIMRS RSP UI</title>
 
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
   <!-- Tabler CSS CDN -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css">
   <!-- Bridge: maps old custom classes → Tabler/Bootstrap equivalents -->
@@ -18,7 +23,7 @@
   <!-- ============================
        TOP NAVBAR (Tabler)
        ============================ -->
-  <header class="navbar navbar-expand-md navbar-light d-print-none sticky-top" style="background: #206bc4; border-bottom: 1px solid #1a5ba8;">
+  <header class="navbar navbar-expand-md navbar-dark d-print-none sticky-top" style="background: linear-gradient(135deg, #1d4ed8, #0e5aa7); border-bottom: 1px solid rgba(255,255,255,0.12); box-shadow: 0 4px 25px rgba(29, 78, 216, 0.18);">
     <div class="container-fluid">
 
       <!-- Brand / Logo -->
@@ -29,7 +34,7 @@
 
       <!-- Mobile toggle -->
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
-        <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+        <span class="navbar-toggler-icon"></span>
       </button>
 
       <!-- Nav Links -->
@@ -52,9 +57,18 @@
               Pendaftaran
             </a>
             <ul class="dropdown-menu shadow-sm border-0" style="min-width: 180px; margin-top: 8px;">
-              <li><a class="dropdown-item" href="{{ url('/pendaftaran') }}">Antrian</a></li>
-              <li><a class="dropdown-item" href="{{ url('/pendaftaran/pasien-baru') }}">Pasien Baru</a></li>
-              <li><a class="dropdown-item" href="{{ url('/pendaftaran/pasien-lama') }}">Pasien Lama</a></li>
+              <li><a class="dropdown-item" href="{{ url('/pendaftaran') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Antrian
+              </a></li>
+              <li><a class="dropdown-item" href="{{ url('/pendaftaran/pasien-baru') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                Pasien Baru
+              </a></li>
+              <li><a class="dropdown-item" href="{{ url('/pendaftaran/pasien-lama') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+                Pasien Lama
+              </a></li>
             </ul>
           </li>
 
@@ -66,8 +80,14 @@
               Rawat Jalan
             </a>
             <ul class="dropdown-menu shadow-sm border-0" style="min-width: 180px; margin-top: 8px;">
-              <li><a class="dropdown-item" href="{{ url('/rawat-jalan') }}">Registered Pasien</a></li>
-              <li><a class="dropdown-item" href="{{ url('/rawat-jalan/pemeriksaan') }}">Pemeriksaan</a></li>
+              <li><a class="dropdown-item" href="{{ url('/rawat-jalan') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+                Registered Pasien
+              </a></li>
+              <li><a class="dropdown-item" href="{{ url('/rawat-jalan/pemeriksaan') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                Pemeriksaan
+              </a></li>
             </ul>
           </li>
 
@@ -79,8 +99,14 @@
               Rawat Inap
             </a>
             <ul class="dropdown-menu shadow-sm border-0" style="min-width: 180px; margin-top: 8px;">
-              <li><a class="dropdown-item" href="{{ url('/rawat-inap') }}">Pasien Dirawat</a></li>
-              <li><a class="dropdown-item" href="{{ url('/rawat-inap/kamar') }}">Kamar &amp; Bangsal</a></li>
+              <li><a class="dropdown-item" href="{{ url('/rawat-inap') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><path d="M2 4v16M2 11h20M22 8v12M6 8a2 2 0 1 0-4 0"/></svg>
+                Pasien Dirawat
+              </a></li>
+              <li><a class="dropdown-item" href="{{ url('/rawat-inap/kamar') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="16"/><path d="M9 16h6v6"/><line x1="12" y1="5" x2="12" y2="11"/><line x1="9" y1="8" x2="15" y2="8"/></svg>
+                Kamar &amp; Bangsal
+              </a></li>
             </ul>
           </li>
 
@@ -92,8 +118,14 @@
               Laboratorium
             </a>
             <ul class="dropdown-menu shadow-sm border-0" style="min-width: 180px; margin-top: 8px;">
-              <li><a class="dropdown-item" href="{{ url('/laboratorium') }}">Antrian</a></li>
-              <li><a class="dropdown-item" href="{{ url('/laboratorium/hasil') }}">Input Hasil</a></li>
+              <li><a class="dropdown-item" href="{{ url('/laboratorium') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Antrian
+              </a></li>
+              <li><a class="dropdown-item" href="{{ url('/laboratorium/hasil') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+                Input Hasil
+              </a></li>
             </ul>
           </li>
 
@@ -105,7 +137,10 @@
               Radiologi
             </a>
             <ul class="dropdown-menu shadow-sm border-0" style="min-width: 180px; margin-top: 8px;">
-              <li><a class="dropdown-item" href="{{ url('/radiologi') }}">Antrian</a></li>
+              <li><a class="dropdown-item" href="{{ url('/radiologi') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Antrian
+              </a></li>
             </ul>
           </li>
 
@@ -117,8 +152,14 @@
               Farmasi
             </a>
             <ul class="dropdown-menu shadow-sm border-0" style="min-width: 180px; margin-top: 8px;">
-              <li><a class="dropdown-item" href="{{ url('/farmasi') }}">Antrian Resep</a></li>
-              <li><a class="dropdown-item" href="{{ url('/farmasi/stok') }}">Stok Obat</a></li>
+              <li><a class="dropdown-item" href="{{ url('/farmasi') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+                Antrian Resep
+              </a></li>
+              <li><a class="dropdown-item" href="{{ url('/farmasi/stok') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 11v6c0 1.66 4 3 9 3s9-1.34 9-3v-6"/></svg>
+                Stok Obat
+              </a></li>
             </ul>
           </li>
 
@@ -130,18 +171,42 @@
             </a>
           </li>
 
-          <!-- Master -->
+          <!-- Master Data -->
           <li class="nav-item dropdown">
             <a href="#" class="nav-link dropdown-toggle @if(request()->is('master*')) active @endif"
                data-bs-toggle="dropdown"
                style="color: rgba(255,255,255,0.85); font-size: 13px; padding: 6px 10px; border-radius: 6px; @if(request()->is('master*')) background: rgba(255,255,255,0.2); color:#fff; @endif">
-              Master
+              Master Data
             </a>
             <ul class="dropdown-menu shadow-sm border-0" style="min-width: 180px; margin-top: 8px;">
-              <li><a class="dropdown-item" href="{{ url('/master/dokter') }}">Data Dokter</a></li>
-              <li><a class="dropdown-item" href="{{ url('/master/poli') }}">Poliklinik</a></li>
-              <li><a class="dropdown-item" href="{{ url('/master/obat') }}">Data Obat</a></li>
-              <li><a class="dropdown-item" href="{{ url('/master/kamar') }}">Kamar / Kelas</a></li>
+              <li><a class="dropdown-item" href="{{ url('/master/pasien') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Data Pasien
+              </a></li>
+              <li><a class="dropdown-item" href="{{ url('/master/dokter') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                Data Dokter
+              </a></li>
+              <li><a class="dropdown-item" href="{{ url('/master/poli') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="16"/><path d="M9 16h6v6"/><line x1="12" y1="5" x2="12" y2="11"/><line x1="9" y1="8" x2="15" y2="8"/></svg>
+                Poliklinik
+              </a></li>
+              <li><a class="dropdown-item" href="{{ url('/master/obat') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+                Data Obat
+              </a></li>
+              <li><a class="dropdown-item" href="{{ url('/master/kamar') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><path d="M2 4v16M2 11h20M22 8v12M6 8a2 2 0 1 0-4 0"/></svg>
+                Kamar / Kelas
+              </a></li>
+              <li><a class="dropdown-item" href="{{ url('/master/tarif') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+                Tarif Layanan
+              </a></li>
+              <li><a class="dropdown-item" href="{{ url('/master/aset') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                Aset & Alat
+              </a></li>
             </ul>
           </li>
 
@@ -186,7 +251,7 @@
        ============================ -->
   <div class="page-wrapper">
     <!-- Page Header (breadcrumb area) -->
-    <div class="page-header d-print-none" style="padding: 12px 0 0;">
+    <div class="page-header d-print-none" style="padding: 4px 0 2px;">
       <div class="container-fluid">
         <div class="row align-items-center">
           <div class="col">
@@ -206,7 +271,7 @@
 
     <!-- Main Content -->
     <div class="page-body">
-      <div class="container-fluid" style="padding-top: 16px; padding-bottom: 24px;">
+      <div class="container-fluid" style="padding-top: 8px; padding-bottom: 24px;">
         @yield('content')
       </div>
     </div>

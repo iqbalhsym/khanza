@@ -184,3 +184,49 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
 });
+
+
+  // ── Master Data Search and Filter ─────────────────────
+  // Auto-submit per_page filter on change
+  document.querySelectorAll('select[name="per_page"]').forEach(function (select) {
+    select.addEventListener('change', function () {
+      // Find the closest form and submit it
+      const form = this.closest('form');
+      if (form) {
+        form.submit();
+      }
+    });
+  });
+
+  // Clear search button functionality
+  document.querySelectorAll('.btn-clear-search').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      const searchInput = this.closest('.input-group').querySelector('input[name="search"]');
+      if (searchInput) {
+        searchInput.value = '';
+        const form = this.closest('form');
+        if (form) {
+          form.submit();
+        }
+      }
+    });
+  });
+
+  // Focus search input on page load if it has value
+  const searchInput = document.querySelector('input[name="search"]');
+  if (searchInput && searchInput.value) {
+    searchInput.focus();
+    searchInput.select();
+  }
+
+  // Add loading indicator on form submission
+  document.querySelectorAll('form[method="GET"]').forEach(function (form) {
+    form.addEventListener('submit', function () {
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mencari...';
+        submitBtn.disabled = true;
+      }
+    });
+  });

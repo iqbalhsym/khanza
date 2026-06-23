@@ -32,7 +32,7 @@
     </div>
 
     <div class="table-wrapper">
-        <table class="table-hover">
+        <table class="table-hover table-nowrap">
             <thead>
                 <tr>
                     <th>Waktu {{ $tab === 'antrian' ? 'Order' : 'Periksa' }}</th>

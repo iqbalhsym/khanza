@@ -10,8 +10,11 @@ class PasienController extends Controller
     /**
      * Daftar pasien (digunakan di /pendaftaran dan /pendaftaran/pasien-lama)
      */
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->input('search');
+        $perPage = $request->input('per_page', 20);
+
         $fields = [
             'no_rkm_medis', 'nm_pasien', 'no_ktp', 'jk', 'tmp_lahir', 'tgl_lahir',
             'nm_ibu', 'alamat', 'gol_darah', 'pekerjaan', 'stts_nikah', 'agama',
@@ -19,16 +22,33 @@ class PasienController extends Controller
             'kd_pj', 'no_peserta', 'kd_kel', 'kd_kec', 'kd_kab', 'pekerjaanpj',
             'alamatpj', 'kelurahanpj', 'kecamatanpj', 'kabupatenpj',
             'perusahaan_pasien', 'suku_bangsa', 'bahasa_pasien', 'cacat_fisik',
-            'email', 'nip', 'kd_prop', 'propinsipj',
+            'email', 'nip', 'kd_prop', 'propinsipj', 'data_pendukung'
         ];
 
-        $pasien = DB::table('pasien')
+        $query = DB::table('pasien')
             ->select($fields)
-            ->orderByRaw('CAST(no_rkm_medis AS UNSIGNED) DESC')
-            ->limit(100)
-            ->get();
+            ->orderByRaw('CAST(no_rkm_medis AS UNSIGNED) DESC');
 
-        return view('pendaftaran.index', compact('pasien'));
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('no_rkm_medis', 'like', '%' . $search . '%')
+                  ->orWhere('nm_pasien', 'like', '%' . $search . '%')
+                  ->orWhere('no_ktp', 'like', '%' . $search . '%')
+                  ->orWhere('alamat', 'like', '%' . $search . '%');
+            });
+        }
+
+        $pasien = $query->paginate($perPage);
+
+        // Tambahkan parameter ke link pagination
+        if ($search) {
+            $pasien->appends(['search' => $search]);
+        }
+        if ($perPage != 20) {
+            $pasien->appends(['per_page' => $perPage]);
+        }
+
+        return view('pendaftaran.index', compact('pasien', 'search', 'perPage'));
     }
 
     /**
@@ -53,6 +73,7 @@ class PasienController extends Controller
             'tgl_lahir'    => 'required|date',
             'nm_ibu'       => 'required|string|max:100',
             'kd_pj'        => 'required|string',
+            'data_pendukung' => 'nullable|file|max:2048|mimes:pdf,doc,docx,jpg,jpeg,png',
         ], [
             'no_rkm_medis.required' => 'Nomor Rekam Medis wajib diisi.',
             'no_rkm_medis.unique'   => 'Nomor Rekam Medis sudah terdaftar.',
@@ -61,9 +82,18 @@ class PasienController extends Controller
             'tgl_lahir.required'    => 'Tanggal Lahir wajib diisi.',
             'nm_ibu.required'       => 'Nama Ibu Kandung wajib diisi.',
             'kd_pj.required'        => 'Kode Jaminan wajib dipilih.',
+            'data_pendukung.max'    => 'Ukuran dokumen data pendukung maksimal 2 MB.',
+            'data_pendukung.mimes'  => 'Format dokumen harus berupa pdf, doc, docx, jpg, jpeg, atau png.',
         ]);
 
         try {
+            $fileName = null;
+            if ($request->hasFile('data_pendukung')) {
+                $file = $request->file('data_pendukung');
+                $fileName = time() . '_' . preg_replace('/[^A-Za-z0-9\._-]/', '', $file->getClientOriginalName());
+                $file->move(public_path('uploads/data_pendukung'), $fileName);
+            }
+
             // Kolom-kolom wajib dan varchar aman selalu dimasukkan
             $data = [
                 'no_rkm_medis' => $request->no_rkm_medis,
@@ -94,6 +124,7 @@ class PasienController extends Controller
                 'propinsipj'   => $request->propinsipj   ?: '',
                 'email'        => $request->email        ?: '',
                 'nip'          => $request->nip          ?: '',
+                'data_pendukung' => $fileName,
             ];
 
             // Kolom FK NOT NULL — wajib selalu dimasukkan dengan nilai valid dari tabel referensi
@@ -179,6 +210,10 @@ class PasienController extends Controller
             'tgl_lahir'    => 'required|date',
             'nm_ibu'       => 'required|string|max:100',
             'kd_pj'        => 'required|string',
+            'data_pendukung' => 'nullable|file|max:2048|mimes:pdf,doc,docx,jpg,jpeg,png',
+        ], [
+            'data_pendukung.max'   => 'Ukuran dokumen data pendukung maksimal 2 MB.',
+            'data_pendukung.mimes' => 'Format dokumen harus berupa pdf, doc, docx, jpg, jpeg, atau png.',
         ]);
 
         try {
@@ -209,6 +244,19 @@ class PasienController extends Controller
                 'email'        => $request->email        ?: '',
                 'nip'          => $request->nip          ?: '',
             ];
+
+            if ($request->hasFile('data_pendukung')) {
+                // Delete old file if exists
+                $oldFile = DB::table('pasien')->where('no_rkm_medis', $id)->value('data_pendukung');
+                if ($oldFile && file_exists(public_path('uploads/data_pendukung/' . $oldFile))) {
+                    @unlink(public_path('uploads/data_pendukung/' . $oldFile));
+                }
+
+                $file = $request->file('data_pendukung');
+                $fileName = time() . '_' . preg_replace('/[^A-Za-z0-9\._-]/', '', $file->getClientOriginalName());
+                $file->move(public_path('uploads/data_pendukung'), $fileName);
+                $data['data_pendukung'] = $fileName;
+            }
 
             if ($request->filled('kd_pj')) {
                 $existsPj = DB::table('penjab')->where('kd_pj', $request->kd_pj)->exists();

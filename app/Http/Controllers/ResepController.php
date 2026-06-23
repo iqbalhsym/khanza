@@ -127,6 +127,28 @@ class ResepController extends Controller
         }
     }
 
+    public function searchObat(Request $request)
+    {
+        $q = trim($request->query('q', ''));
+
+        if (strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $results = DB::table('databarang')
+            ->where('status', '1')
+            ->where(function ($query) use ($q) {
+                $query->whereRaw('LOWER(nama_brng) LIKE ?', ['%' . strtolower($q) . '%'])
+                      ->orWhereRaw('LOWER(kode_brng) LIKE ?', ['%' . strtolower($q) . '%']);
+            })
+            ->select('kode_brng', 'nama_brng', 'kode_sat')
+            ->orderBy('nama_brng', 'asc')
+            ->limit(25)
+            ->get();
+
+        return response()->json($results);
+    }
+
     public function dispense($no_resep)
     {
         try {

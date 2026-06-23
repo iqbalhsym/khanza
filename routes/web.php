@@ -24,12 +24,12 @@ Route::get('/login', function () {
 
 Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
 
-Route::get('/captcha', [App\Http\Controllers\AuthController::class, 'generateCaptcha']);
-
 Route::get('/logout', function() {
     Session::flush();
     return redirect('/login');
 });
+
+Route::get('/captcha', [App\Http\Controllers\AuthController::class, 'generateCaptcha']);
 
 // Protected Internal Routes (Must be logged in via LDAP)
 Route::middleware('auth.session')->group(function () {
@@ -64,6 +64,8 @@ Route::middleware('auth.session')->group(function () {
         Route::post('/pemeriksaan/store', [App\Http\Controllers\PemeriksaanController::class, 'store']);
         Route::get('/resep/{no_rawat}', [App\Http\Controllers\ResepController::class, 'create'])->where('no_rawat', '.*');
         Route::post('/resep/store', [App\Http\Controllers\ResepController::class, 'store']);
+        Route::get('/search-obat', [App\Http\Controllers\ResepController::class, 'searchObat']);
+        Route::get('/search-pasien', [App\Http\Controllers\RawatJalanController::class, 'searchPasien']);
     });
 
     // Farmasi
@@ -109,11 +111,14 @@ Route::middleware('auth.session')->group(function () {
 
     // Master Data
     Route::prefix('master')->group(function () {
-        Route::get('/',        [App\Http\Controllers\MasterController::class, 'dokter']); // Default to dokter
+        Route::get('/',        [App\Http\Controllers\MasterController::class, 'pasien']); // Default to pasien
+        Route::get('/pasien',  [App\Http\Controllers\MasterController::class, 'pasien']);
         Route::get('/dokter',  [App\Http\Controllers\MasterController::class, 'dokter']);
         Route::get('/poli',    [App\Http\Controllers\MasterController::class, 'poli']);
         Route::get('/obat',    [App\Http\Controllers\MasterController::class, 'obat']);
         Route::get('/kamar',   [App\Http\Controllers\MasterController::class, 'kamar']);
+        Route::get('/tarif',   [App\Http\Controllers\MasterController::class, 'tarif']);
+        Route::get('/aset',    [App\Http\Controllers\MasterController::class, 'aset']);
     });
 
     Route::get('/laporan', fn() => view('laporan.index'));

@@ -64,31 +64,34 @@
 
 <!-- Filter Bar -->
 <div class="filter-bar">
-  <div class="input-group search-box">
-    <span class="input-group-text">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    </span>
-    <input type="text" class="form-control" id="tableSearch" placeholder="Cari nama pasien, nomor rm…">
-  </div>
-  <select class="form-control" style="width:160px;">
-    <option value="">Semua Poli</option>
-    <option>Poli Umum</option>
-    <option>Poli Dalam</option>
-    <option>Poli Bedah</option>
-    <option>Poli Anak</option>
-    <option>Poli Kandungan</option>
-  </select>
-  <select class="form-control" style="width:160px;">
-    <option value="">Semua Status</option>
-    <option>Menunggu</option>
-    <option>Dipanggil</option>
-    <option>Dalam Proses</option>
-    <option>Selesai</option>
-  </select>
-  <button class="btn btn-ghost">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="1" x2="17" y2="23"/><path d="M3 6h14"/><path d="M3 12h9"/></svg>
-    Filter
-  </button>
+  <form method="GET" action="{{ url()->current() }}" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; width:100%; margin:0;">
+    <div class="input-group search-box" style="max-width:350px; flex:1;">
+      <span class="input-group-text">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </span>
+      <input type="text" class="form-control" name="search" id="tableSearch" placeholder="Cari nama pasien, nomor rm, NIK, alamat…" value="{{ $search ?? '' }}">
+      @if($search ?? '')
+        <a href="{{ url()->current() }}" class="btn btn-ghost btn-sm" style="display:flex; align-items:center; padding: 0 8px; border:none; background:transparent;" title="Reset Pencarian">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </a>
+      @endif
+    </div>
+
+    <div style="display:flex; align-items:center; gap:8px; margin-left:auto;">
+      <label class="text-sm text-muted" style="white-space:nowrap; margin-bottom:0;">Tampilkan:</label>
+      <select name="per_page" class="form-control" style="width:85px; padding: 6px 10px;" onchange="this.form.submit()">
+        <option value="10" {{ ($perPage ?? 20) == 10 ? 'selected' : '' }}>10</option>
+        <option value="20" {{ ($perPage ?? 20) == 20 ? 'selected' : '' }}>20</option>
+        <option value="50" {{ ($perPage ?? 20) == 50 ? 'selected' : '' }}>50</option>
+        <option value="100" {{ ($perPage ?? 20) == 100 ? 'selected' : '' }}>100</option>
+        <option value="200" {{ ($perPage ?? 20) == 200 ? 'selected' : '' }}>200</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+      Cari
+    </button>
+  </form>
 </div>
 
 <!-- Table -->
@@ -107,6 +110,7 @@
           <th width="40"><input type="checkbox" id="selectAll"></th>
           <th>No. RM</th>
           <th>Nama Pasien</th>
+          <th>Data Pendukung</th>
           <th>No. KTP</th>
           <th>JK</th>
           <th>Tempat Lahir</th>
@@ -150,6 +154,16 @@
           <td><input type="checkbox" class="row-check"></td>
           <td><span class="fw-bold text-primary">{{ $p->no_rkm_medis }}</span></td>
           <td class="fw-semibold">{{ $p->nm_pasien }}</td>
+          <td>
+            @if(isset($p->data_pendukung) && $p->data_pendukung)
+              <a href="{{ asset('uploads/data_pendukung/' . $p->data_pendukung) }}" target="_blank" class="badge bg-primary text-white" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:4px;" onclick="event.stopPropagation()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                Unduh
+              </a>
+            @else
+              <span class="text-muted small">-</span>
+            @endif
+          </td>
           <td>{{ $p->no_ktp }}</td>
           <td><span class="badge badge-gray">{{ $p->jk }}</span></td>
           <td>{{ $p->tmp_lahir }}</td>
@@ -211,14 +225,16 @@
       </tbody>
     </table>
   </div>
-  <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between;">
-    <span class="text-sm text-muted">Menampilkan {{ $pasien->count() }} data pasien terbaru</span>
-    <div class="pagination">
-      <button class="page-btn">‹</button>
-      <button class="page-btn active">1</button>
-      <button class="page-btn">2</button>
-      <button class="page-btn">3</button>
-      <button class="page-btn">›</button>
+  <div class="card-footer bg-light" style="display:flex; align-items:center; justify-content:space-between; padding:16px;">
+    <div class="text-muted" style="font-size: 13px;">
+      Menampilkan <strong>{{ $pasien->firstItem() ?? 0 }}</strong> - <strong>{{ $pasien->lastItem() ?? 0 }}</strong> 
+      dari <strong>{{ number_format($pasien->total()) }}</strong> data pasien
+      @if($search ?? '')
+        <span class="ms-2 text-primary">• Pencarian: "{{ $search }}"</span>
+      @endif
+    </div>
+    <div class="d-flex justify-content-end">
+      {{ $pasien->appends(request()->except('page'))->links('pagination::bootstrap-4') }}
     </div>
   </div>
 </div>

@@ -49,7 +49,7 @@
 
   <!-- Form -->
   <div>
-    <form action="{{ url('/pendaftaran/store') }}" method="POST">
+    <form action="{{ url('/pendaftaran/store') }}" method="POST" enctype="multipart/form-data">
       @csrf
 
       <!-- 1. Data Pribadi -->
@@ -137,6 +137,10 @@
             <div class="form-group">
               <label class="form-label">Pekerjaan</label>
               <input type="text" class="form-control" name="pekerjaan" placeholder="Pekerjaan pasien">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Data Pendukung (Maks 2MB)</label>
+              <input type="file" class="form-control" name="data_pendukung" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
             </div>
           </div>
         </div>
