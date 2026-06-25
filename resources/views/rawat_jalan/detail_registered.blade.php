@@ -34,6 +34,28 @@
     <span>🏠 <strong>{{ Str::limit($data->alamat,35) }}</strong></span>
   </div>
   <div class="ms-auto d-flex gap-2 align-items-center">
+    {{-- Allergies Button --}}
+    <button onclick="showModal('modal-allergy')" class="btn btn-sm d-flex align-items-center gap-1" 
+            style="background:#fff5f5; color:#dc2626; border:1px solid #fca5a5; font-size:11px; padding: 4px 8px; font-weight:600;">
+      ⚠ Allergies ({{ $allergies->count() }})
+    </button>
+
+    {{-- Special Precautions Badge --}}
+    @if(!empty($data->special_precautions))
+      @php
+        $precColors = [
+          'green' => ['bg' => '#e6f4ea', 'text' => '#137333', 'border' => '#a8dab5'],
+          'yellow' => ['bg' => '#fef7e0', 'text' => '#b06000', 'border' => '#fde293'],
+          'red' => ['bg' => '#fce8e6', 'text' => '#c5221f', 'border' => '#fad2cf']
+        ];
+        $colorSet = $precColors[strtolower($data->special_precautions_color)] ?? ['bg' => '#f1f3f4', 'text' => '#3c4043', 'border' => '#dadce0'];
+      @endphp
+      <span class="badge d-flex align-items-center gap-1" 
+            style="background:{{ $colorSet['bg'] }}; color:{{ $colorSet['text'] }}; border:1px solid {{ $colorSet['border'] }}; font-size:11px; padding: 5px 10px; font-weight:600; text-shadow:none; text-transform:none;">
+        ⚠️ {{ $data->special_precautions }}
+      </span>
+    @endif
+
     {{-- PIC & DPJP Dropdown --}}
     <div class="dropdown">
       <button class="btn btn-sm d-flex align-items-center gap-1 dropdown-toggle" type="button" id="dropdownPIC" data-bs-toggle="dropdown" aria-expanded="false" 
@@ -323,28 +345,6 @@
       </div>
     </div>
 
-    {{-- Allergies --}}
-    <div class="card card-sm" style="flex-shrink:0;border-color:#fca5a5 !important;">
-      <div class="card-header py-1 px-2 d-flex justify-content-between align-items-center" style="background:#fef2f2;border-color:#fca5a5;">
-        <span class="fw-bold text-uppercase" style="font-size:10px;color:#dc2626;letter-spacing:.5px;">⚠ Allergies</span>
-        <button onclick="showModal('modal-allergy')" class="btn btn-xs py-0 px-1" style="font-size:10px;color:#dc2626;border:1px solid #fca5a5;background:#fff5f5;">+ New</button>
-      </div>
-      <div style="max-height:110px;overflow-y:auto;">
-        @forelse($allergies as $alg)
-        <div class="d-flex align-items-center gap-1 px-2 py-1 border-bottom" style="font-size:11px;">
-          <span class="fw-medium flex-fill">{{ $alg->allergies }}</span>
-          <span class="text-muted" style="font-size:10px;">{{ $alg->type_reaction }}</span>
-          <span class="badge bg-{{ $alg->severity==='Severe'?'danger':($alg->severity==='Moderate'?'warning':'success') }}-lt ms-1" style="font-size:9px;">{{ $alg->severity }}</span>
-          <form action="{{ url('/rawat-jalan/registered/delete-allergy/'.$alg->id) }}" method="POST" class="ms-1" onsubmit="return confirm('Hapus?')">
-            @csrf @method('DELETE')
-            <button class="btn btn-sm p-0" style="color:#ef4444;font-size:13px;line-height:1;background:none;border:none;">×</button>
-          </form>
-        </div>
-        @empty
-        <div class="p-2 text-muted fst-italic" style="font-size:11px;">Tidak ada alergi tercatat.</div>
-        @endforelse
-      </div>
-    </div>
 
     {{-- Patient Identification --}}
     <div class="card card-sm" style="flex:1;min-height:0;display:flex;flex-direction:column;">
@@ -401,21 +401,60 @@
 
 {{-- Modal: Add Allergy --}}
 <div id="modal-allergy" class="modal-overlay" style="display:none;">
-  <div class="modal-content-sm">
-    <h5 class="mb-3" style="font-size:15px;">Tambah Alergi</h5>
+  <div class="modal-content-sm" style="width: 480px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="m-0" style="font-size:16px; font-weight:700; color:#dc2626;">⚠ Alergi Pasien</h5>
+      <button type="button" onclick="hideModal('modal-allergy')" class="btn-close" style="font-size: 12px; background:none; border:none; color:#94a3b8; font-weight:bold;">×</button>
+    </div>
+    
+    {{-- List of Existing Allergies --}}
+    <div class="mb-3 p-2 rounded" style="background:#fcfcfc; border:1px solid #e2e8f0; max-height: 200px; overflow-y: auto;">
+      <div class="fw-bold text-uppercase mb-2 text-muted" style="font-size:10px; letter-spacing:0.5px;">Daftar Alergi Terdaftar</div>
+      @forelse($allergies as $alg)
+      <div class="d-flex align-items-center justify-content-between gap-1 py-2 border-bottom" style="font-size:12px;">
+        <div>
+          <strong class="text-dark">{{ $alg->allergies }}</strong>
+          <span class="text-muted">({{ $alg->type_reaction }})</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-{{ $alg->severity==='Severe'?'danger':($alg->severity==='Moderate'?'warning':'success') }}-lt" style="font-size:10px;">{{ $alg->severity }}</span>
+          <form action="{{ url('/rawat-jalan/registered/delete-allergy/'.$alg->id) }}" method="POST" class="m-0" onsubmit="return confirm('Hapus?')">
+            @csrf @method('DELETE')
+            <button class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:11px;">Hapus</button>
+          </form>
+        </div>
+      </div>
+      @empty
+      <div class="p-2 text-center text-muted fst-italic" style="font-size:11px;">Tidak ada alergi tercatat.</div>
+      @endforelse
+    </div>
+
+    <hr class="my-3">
+
+    {{-- Form to Add New --}}
     <form action="{{ url('/rawat-jalan/registered/store-allergy') }}" method="POST">
       @csrf
       <input type="hidden" name="no_rkm_medis" value="{{ $data->no_rkm_medis }}">
-      <div class="mb-2"><label class="form-label" style="font-size:12px;">Allergen</label><input type="text" name="allergies" class="form-control form-control-sm" required></div>
-      <div class="mb-2"><label class="form-label" style="font-size:12px;">Type / Reaction</label><input type="text" name="type_reaction" class="form-control form-control-sm" required></div>
-      <div class="mb-3"><label class="form-label" style="font-size:12px;">Severity</label>
+      <div class="fw-bold text-uppercase mb-2 text-primary" style="font-size:10px; letter-spacing:0.5px;">Tambah Alergi Baru</div>
+      <div class="mb-2">
+        <label class="form-label" style="font-size:12px; font-weight:600;">Allergen</label>
+        <input type="text" name="allergies" class="form-control form-control-sm" placeholder="Contoh: Amoxicillin, Seafood" required>
+      </div>
+      <div class="mb-2">
+        <label class="form-label" style="font-size:12px; font-weight:600;">Type / Reaction</label>
+        <input type="text" name="type_reaction" class="form-control form-control-sm" placeholder="Contoh: Gatal-gatal, Sesak Nafas" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" style="font-size:12px; font-weight:600;">Severity</label>
         <select name="severity" class="form-select form-select-sm">
-          <option value="Mild">Mild</option><option value="Moderate">Moderate</option><option value="Severe">Severe</option>
+          <option value="Mild">Mild</option>
+          <option value="Moderate">Moderate</option>
+          <option value="Severe">Severe</option>
         </select>
       </div>
       <div class="d-flex justify-content-end gap-2">
-        <button type="button" onclick="hideModal('modal-allergy')" class="btn btn-sm btn-outline-secondary">Batal</button>
-        <button type="submit" class="btn btn-sm btn-danger">Simpan</button>
+        <button type="button" onclick="hideModal('modal-allergy')" class="btn btn-sm btn-outline-secondary">Tutup</button>
+        <button type="submit" class="btn btn-sm btn-danger">Simpan Alergi</button>
       </div>
     </form>
   </div>

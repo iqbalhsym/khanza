@@ -255,9 +255,25 @@
               <td class="fw-bold fs-5">{{ $r->no_reg }}</td>
               <td class="text-muted">{{ $r->no_rkm_medis }}</td>
               <td>
-                <a href="{{ url('/rawat-jalan/registered/' . urlencode($r->no_rawat)) }}" class="fw-semibold text-reset" style="text-decoration:none;">
-                  {{ $r->nm_pasien }}
-                </a>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                  <a href="{{ url('/rawat-jalan/registered/' . urlencode($r->no_rawat)) }}" class="fw-semibold text-reset" style="text-decoration:none;">
+                    {{ $r->nm_pasien }}
+                  </a>
+                  @if(!empty($r->special_precautions))
+                    @php
+                      $precColors = [
+                        'green' => ['bg' => '#e6f4ea', 'text' => '#137333', 'border' => '#a8dab5'],
+                        'yellow' => ['bg' => '#fef7e0', 'text' => '#b06000', 'border' => '#fde293'],
+                        'red' => ['bg' => '#fce8e6', 'text' => '#c5221f', 'border' => '#fad2cf']
+                      ];
+                      $colorSet = $precColors[strtolower($r->special_precautions_color)] ?? ['bg' => '#f1f3f4', 'text' => '#3c4043', 'border' => '#dadce0'];
+                    @endphp
+                    <span class="badge d-inline-flex align-items-center gap-1" 
+                          style="background:{{ $colorSet['bg'] }}; color:{{ $colorSet['text'] }}; border:1px solid {{ $colorSet['border'] }}; font-size:10px; padding: 2px 6px; font-weight:600; text-transform:none; text-shadow:none;">
+                      ⚠️ {{ $r->special_precautions }}
+                    </span>
+                  @endif
+                </div>
                 <div class="text-muted small">{{ $r->jk }}</div>
               </td>
               <td>

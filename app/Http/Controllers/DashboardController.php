@@ -84,7 +84,15 @@ class DashboardController extends Controller
         $yesterday_farmasi = $yesterdayFarmasiQuery->count();
         $stats['farmasi_diff'] = $stats['farmasi'] - $yesterday_farmasi;
 
-        // 6. Recent Activities
+        // 6. Emergency (IGD) - Mock/Placeholder
+        $stats['emergency'] = 0;
+        $stats['emergency_diff'] = 0;
+
+        // 7. Konsul - Mock/Placeholder
+        $stats['konsul'] = 0;
+        $stats['konsul_diff'] = 0;
+
+        // 8. Recent Activities
         $activitiesQuery = DB::table('reg_periksa')
             ->select(
                 'no_rawat',

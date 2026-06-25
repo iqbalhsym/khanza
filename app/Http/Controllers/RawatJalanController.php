@@ -53,6 +53,7 @@ class RawatJalanController extends Controller
                 'reg_periksa.no_rawat', 'reg_periksa.no_reg', 'reg_periksa.jam_reg',
                 'reg_periksa.stts', 'reg_periksa.tgl_registrasi', 'reg_periksa.kd_dokter',
                 'pasien.no_rkm_medis', 'pasien.nm_pasien', 'pasien.umur', 'pasien.jk',
+                'pasien.special_precautions', 'pasien.special_precautions_color',
                 'poliklinik.nm_poli', 'penjab.png_jawab as jaminan'
             )
             ->orderBy('reg_periksa.tgl_registrasi', 'desc')
@@ -196,6 +197,7 @@ class RawatJalanController extends Controller
             ->select(
                 'reg_periksa.no_rawat', 'reg_periksa.tgl_registrasi', 'reg_periksa.jam_reg', 'reg_periksa.p_jawab', 'reg_periksa.biaya_reg', 'reg_periksa.kd_dokter',
                 'pasien.no_rkm_medis', 'pasien.nm_pasien', 'pasien.tgl_lahir', 'pasien.umur', 'pasien.jk', 'pasien.agama', 'pasien.alamat', 'pasien.no_tlp',
+                'pasien.special_precautions', 'pasien.special_precautions_color',
                 'poliklinik.nm_poli', 'penjab.png_jawab as jaminan',
                 'pemeriksaan_ralan.keluhan'
             )

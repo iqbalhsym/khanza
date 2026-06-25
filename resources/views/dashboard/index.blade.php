@@ -24,22 +24,22 @@
 </div>
 
 <div class="row row-cards">
-  <!-- Stat Card: Total Pasien -->
+  <!-- Stat Card: Rawat Inap -->
   <div class="col-sm-6 col-lg-3">
     <div class="card card-sm dashboard-stat-card">
       <div class="card-body">
         <div class="row align-items-center">
           <div class="col-auto">
             <span class="bg-blue text-white avatar">
-              <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="9" cy="7" r="4" /><path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /><path d="M21 21v-2a4 4 0 0 0 -3 -3.85" /></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 7v11m0 -4h18m0 4v-11M7 7v11" /><path d="M7 7h10a2 2 0 0 1 2 2v2H5V9a2 2 0 0 1 2 -2" /></svg>
             </span>
           </div>
           <div class="col">
             <div class="font-weight-medium">
-              {{ number_format($stats['total_pasien']) }} Pasien
+              {{ number_format($stats['ranap']) }} Pasien
             </div>
             <div class="text-muted">
-              Total Hari Ini
+              Rawat Inap
             </div>
           </div>
         </div>
@@ -70,22 +70,22 @@
     </div>
   </div>
 
-  <!-- Stat Card: Rawat Inap -->
+  <!-- Stat Card: Emergency -->
   <div class="col-sm-6 col-lg-3">
     <div class="card card-sm dashboard-stat-card">
       <div class="card-body">
         <div class="row align-items-center">
           <div class="col-auto">
-            <span class="bg-orange text-white avatar">
-              <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 7v11m0 -4h18m0 4v-11M7 7v11" /><path d="M7 7h10a2 2 0 0 1 2 2v2H5V9a2 2 0 0 1 2 -2" /></svg>
+            <span class="bg-red text-white avatar">
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-activity" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12h4l3 8l4 -16l3 8h4" /></svg>
             </span>
           </div>
           <div class="col">
             <div class="font-weight-medium">
-              {{ number_format($stats['ranap']) }} Pasien
+              {{ number_format($stats['emergency']) }} Pasien
             </div>
             <div class="text-muted">
-              Rawat Inap
+              Emergency
             </div>
           </div>
         </div>
@@ -93,22 +93,22 @@
     </div>
   </div>
 
-  <!-- Stat Card: Farmasi -->
+  <!-- Stat Card: Konsul -->
   <div class="col-sm-6 col-lg-3">
     <div class="card card-sm dashboard-stat-card">
       <div class="card-body">
         <div class="row align-items-center">
           <div class="col-auto">
             <span class="bg-purple text-white avatar">
-              <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3l5 5l-10 10l-5 -5l5 -5" /><path d="M15 11l-4 -4" /><path d="M3 21l4 -4" /></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-messages" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M21 14l-3 -3h-7a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h9a1 1 0 0 1 1 1v10z" /><path d="M14 15v2a1 1 0 0 1 -1 1h-7l-3 3v-10a1 1 0 0 1 1 -1h2" /></svg>
             </span>
           </div>
           <div class="col">
             <div class="font-weight-medium">
-              {{ number_format($stats['farmasi']) }} Resep
+              {{ number_format($stats['konsul']) }} Sesi
             </div>
             <div class="text-muted">
-              Apotek Today
+              Konsul
             </div>
           </div>
         </div>

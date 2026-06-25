@@ -22,7 +22,7 @@ class PasienController extends Controller
             'kd_pj', 'no_peserta', 'kd_kel', 'kd_kec', 'kd_kab', 'pekerjaanpj',
             'alamatpj', 'kelurahanpj', 'kecamatanpj', 'kabupatenpj',
             'perusahaan_pasien', 'suku_bangsa', 'bahasa_pasien', 'cacat_fisik',
-            'email', 'nip', 'kd_prop', 'propinsipj', 'data_pendukung'
+            'email', 'nip', 'kd_prop', 'propinsipj', 'data_pendukung', 'special_precautions', 'special_precautions_color'
         ];
 
         $query = DB::table('pasien')
@@ -125,6 +125,8 @@ class PasienController extends Controller
                 'email'        => $request->email        ?: '',
                 'nip'          => $request->nip          ?: '',
                 'data_pendukung' => $fileName,
+                'special_precautions' => $request->special_precautions ?: null,
+                'special_precautions_color' => $request->special_precautions_color ?: null,
             ];
 
             // Kolom FK NOT NULL — wajib selalu dimasukkan dengan nilai valid dari tabel referensi
@@ -243,6 +245,8 @@ class PasienController extends Controller
                 'propinsipj'   => $request->propinsipj   ?: '',
                 'email'        => $request->email        ?: '',
                 'nip'          => $request->nip          ?: '',
+                'special_precautions' => $request->special_precautions ?: null,
+                'special_precautions_color' => $request->special_precautions_color ?: null,
             ];
 
             if ($request->hasFile('data_pendukung')) {

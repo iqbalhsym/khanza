@@ -142,6 +142,19 @@
               <label class="form-label">Data Pendukung (Maks 2MB)</label>
               <input type="file" class="form-control" name="data_pendukung" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
             </div>
+            <div class="form-group">
+              <label class="form-label">Special Precautions (Prioritas Pasien)</label>
+              <input type="text" class="form-control" name="special_precautions" placeholder="Contoh: Karyawan, Orang Penting, Biasa">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Warna Peringatan (Special Precautions Color)</label>
+              <select class="form-control" name="special_precautions_color">
+                <option value="">Pilih Warna</option>
+                <option value="green">Hijau (Green)</option>
+                <option value="yellow">Kuning (Yellow)</option>
+                <option value="red">Merah (Red)</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>

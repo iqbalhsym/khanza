@@ -151,6 +151,19 @@
                 </div>
               @endif
             </div>
+            <div class="form-group">
+              <label class="form-label">Special Precautions (Prioritas Pasien)</label>
+              <input type="text" class="form-control" name="special_precautions" value="{{ $pasien->special_precautions ?? '' }}" placeholder="Contoh: Karyawan, Orang Penting, Biasa">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Warna Peringatan (Special Precautions Color)</label>
+              <select class="form-control" name="special_precautions_color">
+                <option value="" {{ ($pasien->special_precautions_color ?? '') == '' ? 'selected' : '' }}>Pilih Warna</option>
+                <option value="green" {{ ($pasien->special_precautions_color ?? '') == 'green' ? 'selected' : '' }}>Hijau (Green)</option>
+                <option value="yellow" {{ ($pasien->special_precautions_color ?? '') == 'yellow' ? 'selected' : '' }}>Kuning (Yellow)</option>
+                <option value="red" {{ ($pasien->special_precautions_color ?? '') == 'red' ? 'selected' : '' }}>Merah (Red)</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
