@@ -9,14 +9,42 @@
 <div class="page-header">
   <div class="page-header-left">
     <h1>Data Dokter</h1>
-    <p>Kelola data dokter dan spesialisasi yang aktif</p>
+    <p>Kelola data dokter dan spesialisasi klinik</p>
   </div>
-  <div class="page-header-right">
-    <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 13px;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-      </svg>
-      Total: {{ $data->total() }} dokter
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm p-3 d-flex align-items-center justify-content-between flex-row" style="background: #fff; border-radius: 8px;">
+      <div>
+        <div class="text-muted text-uppercase fw-semibold" style="font-size: 11px; letter-spacing: 0.5px;">Total Dokter</div>
+        <div class="h2 mb-0 fw-bold text-dark" style="font-size: 24px; margin-top: 4px;">{{ number_format($stats->total) }}</div>
+      </div>
+      <div class="d-flex align-items-center justify-content-center bg-blue-lt rounded" style="width: 44px; height: 44px; background: rgba(32, 107, 196, 0.1); color: #206bc4;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm p-3 d-flex align-items-center justify-content-between flex-row" style="background: #fff; border-radius: 8px;">
+      <div>
+        <div class="text-muted text-uppercase fw-semibold" style="font-size: 11px; letter-spacing: 0.5px;">Dokter Aktif</div>
+        <div class="h2 mb-0 fw-bold text-success" style="font-size: 24px; margin-top: 4px;">{{ number_format($stats->aktif) }}</div>
+      </div>
+      <div class="d-flex align-items-center justify-content-center bg-success-lt rounded" style="width: 44px; height: 44px; background: rgba(47, 179, 68, 0.1); color: #2fb344;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm p-3 d-flex align-items-center justify-content-between flex-row" style="background: #fff; border-radius: 8px;">
+      <div>
+        <div class="text-muted text-uppercase fw-semibold" style="font-size: 11px; letter-spacing: 0.5px;">Dokter Tidak Aktif</div>
+        <div class="h2 mb-0 fw-bold text-secondary" style="font-size: 24px; margin-top: 4px;">{{ number_format($stats->tidak_aktif) }}</div>
+      </div>
+      <div class="d-flex align-items-center justify-content-center bg-secondary-lt rounded" style="width: 44px; height: 44px; background: rgba(100, 116, 139, 0.1); color: #64748b;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      </div>
     </div>
   </div>
 </div>
@@ -25,9 +53,9 @@
         <!-- Search & Filter Header -->
         <div class="card-header bg-light">
             <div class="row align-items-center g-3">
-                <div class="col-md-8">
-                    <form method="GET" action="{{ url('/master/dokter') }}" class="d-flex align-items-center gap-2">
-                        <div class="input-group" style="max-width: 400px;">
+                <div class="col-md-9">
+                    <form method="GET" action="{{ url('/master/dokter') }}" class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="input-group" style="max-width: 320px;">
                             <span class="input-group-text bg-white border-end-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="11" cy="11" r="8"></circle>
@@ -37,31 +65,42 @@
                             <input type="text" 
                                    name="search" 
                                    class="form-control border-start-0" 
-                                   placeholder="Cari kode, nama dokter, atau spesialisasi..." 
+                                   placeholder="Cari kode, nama, spesialisasi..." 
                                    value="{{ $search ?? '' }}">
                             @if($search ?? '')
-                            <a href="{{ url('/master/dokter') }}" class="btn btn-outline-secondary" title="Hapus pencarian">
+                            <a href="{{ url('/master/dokter?status=' . ($statusFilter ?? 'all')) }}" class="btn btn-outline-secondary" title="Hapus pencarian">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <line x1="18" y1="6" x2="6" y2="18"></line>
                                     <line x1="6" y1="6" x2="18" y2="18"></line>
                                 </svg>
                             </a>
                             @endif
-                            <button type="submit" class="btn btn-primary">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="11" cy="11" r="8"></circle>
-                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                </svg>
-                                <span class="d-none d-sm-inline ms-1">Cari</span>
-                            </button>
                         </div>
+
+                        <!-- Dropdown Status Filter -->
+                        <div style="min-width: 140px;">
+                            <select name="status" class="form-select border-1" onchange="this.form.submit()">
+                                <option value="all" {{ ($statusFilter ?? 'all') == 'all' ? 'selected' : '' }}>Semua Status</option>
+                                <option value="active" {{ ($statusFilter ?? 'all') == 'active' ? 'selected' : '' }}>Aktif</option>
+                                <option value="inactive" {{ ($statusFilter ?? 'all') == 'inactive' ? 'selected' : '' }}>Tidak Aktif</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <span class="d-none d-sm-inline ms-1">Cari</span>
+                        </button>
                     </form>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <form method="GET" action="{{ url('/master/dokter') }}" class="d-flex align-items-center justify-content-end gap-2">
                         @if($search ?? '')
                         <input type="hidden" name="search" value="{{ $search }}">
                         @endif
+                        <input type="hidden" name="status" value="{{ $statusFilter ?? 'all' }}">
                         <label class="form-label mb-0 text-muted" style="font-size: 13px; white-space: nowrap;">Tampilkan:</label>
                         <select name="per_page" class="form-select form-select-sm" style="width: auto; min-width: 80px;" onchange="this.form.submit()">
                             <option value="10" {{ ($perPage ?? 20) == 10 ? 'selected' : '' }}>10</option>
@@ -121,11 +160,21 @@
                             <td class="text-muted">{{ $d->no_ijn_praktek ?? '-' }}</td>
                             <td class="text-sm">{{ Str::limit($d->almt_tgl ?? '-', 40) }}</td>
                             <td>
-                                @if($d->status == '1')
-                                    <span class="badge badge-success">Aktif</span>
-                                @else
-                                    <span class="badge badge-gray">Tidak Aktif</span>
-                                @endif
+                                <div class="d-flex align-items-center gap-2">
+                                    @if($d->status == '1')
+                                        <span class="badge badge-success" style="min-width: 80px; display: inline-block; text-align: center;">Aktif</span>
+                                        <form action="{{ url('/master/dokter/toggle-status/' . $d->kd_dokter) }}" method="POST" class="m-0" onsubmit="return confirm('Apakah Anda yakin ingin menonaktifkan dokter ini?')">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" style="font-size: 11px; padding: 2px 6px;">Nonaktifkan</button>
+                                        </form>
+                                    @else
+                                        <span class="badge badge-gray" style="min-width: 80px; display: inline-block; text-align: center;">Tidak Aktif</span>
+                                        <form action="{{ url('/master/dokter/toggle-status/' . $d->kd_dokter) }}" method="POST" class="m-0" onsubmit="return confirm('Apakah Anda yakin ingin mengaktifkan dokter ini?')">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-outline-success" style="font-size: 11px; padding: 2px 6px;">Aktifkan</button>
+                                        </form>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                         @endforeach

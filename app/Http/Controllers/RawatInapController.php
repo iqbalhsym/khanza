@@ -12,12 +12,13 @@ class RawatInapController extends Controller
      */
     public function index(Request $request)
     {
+        $kd_dokter = session('user')->kd_dokter ?? null;
+
         $query = DB::table('kamar_inap')
             ->join('reg_periksa', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
             ->join('kamar', 'kamar_inap.kd_kamar', '=', 'kamar.kd_kamar')
             ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
-            ->join('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
             ->where('kamar_inap.stts_pulang', '-')
             ->select(
                 'kamar_inap.*',
@@ -26,10 +27,14 @@ class RawatInapController extends Controller
                 'kamar.kd_kamar',
                 'kamar.kelas',
                 'bangsal.nm_bangsal',
-                'dokter.nm_dokter as dpjp',
+                'reg_periksa.kd_dokter',
                 'reg_periksa.p_jawab',
                 'reg_periksa.hubunganpj'
             );
+
+        if ($kd_dokter) {
+            $query->where('reg_periksa.kd_dokter', $kd_dokter);
+        }
 
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
@@ -44,6 +49,20 @@ class RawatInapController extends Controller
             ->orderBy('kamar_inap.jam_masuk', 'desc')
             ->paginate(20)
             ->withQueryString();
+
+        // Ambil nama dokter dari database dokter secara terpisah
+        $kd_dokters = collect($data->items())->pluck('kd_dokter')->unique()->toArray();
+        if (!empty($kd_dokters)) {
+            $dokters = DB::connection('dokter')->table('dokter')
+                ->whereIn('kd_dokter', $kd_dokters)
+                ->pluck('nm_dokter', 'kd_dokter');
+        } else {
+            $dokters = collect();
+        }
+
+        foreach ($data->items() as $item) {
+            $item->dpjp = $dokters[$item->kd_dokter] ?? '-';
+        }
 
         return view('rawat_inap.index', compact('data'));
     }

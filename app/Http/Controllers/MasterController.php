@@ -44,11 +44,31 @@ class MasterController extends Controller
     {
         $search = $request->input('search');
         $perPage = $request->input('per_page', 20);
+        $statusFilter = $request->input('status', 'all'); // all, active, inactive
         
-        $query = DB::table('dokter')
-            ->leftJoin('spesialis', 'dokter.kd_sps', '=', 'spesialis.kd_sps')
-            ->select('dokter.*', 'spesialis.nm_sps')
-            ->where('dokter.status', '1');
+        // Ambil statistik jumlah dokter dari database dokter
+        $stats = DB::connection('dokter')->table('dokter')
+            ->selectRaw("
+                count(*) as total,
+                sum(case when status = '1' then 1 else 0 end) as aktif,
+                sum(case when status = '1' then 0 else 1 end) as tidak_aktif
+            ")
+            ->first();
+
+        $sikDb = config('database.connections.mysql.database', 'sik');
+
+        $query = DB::connection('dokter')->table('dokter')
+            ->leftJoin("{$sikDb}.spesialis as spesialis", 'dokter.kd_sps', '=', 'spesialis.kd_sps')
+            ->select('dokter.*', 'spesialis.nm_sps');
+        
+        // Terapkan filter status
+        if ($statusFilter === 'active') {
+            $query->where('dokter.status', '1');
+        } elseif ($statusFilter === 'inactive') {
+            $query->where(function($q) {
+                $q->where('dokter.status', '!=', '1')->orWhereNull('dokter.status');
+            });
+        }
         
         if ($search) {
             $query->where(function($q) use ($search) {
@@ -60,15 +80,27 @@ class MasterController extends Controller
         
         $data = $query->orderBy('dokter.nm_dokter', 'asc')->paginate($perPage);
         
-        // Tambahkan parameter pencarian ke pagination links
-        if ($search) {
-            $data->appends(['search' => $search]);
-        }
-        if ($perPage != 20) {
-            $data->appends(['per_page' => $perPage]);
-        }
+        // Tambahkan parameter ke link pagination
+        $data->appends([
+            'search' => $search,
+            'per_page' => $perPage,
+            'status' => $statusFilter
+        ]);
         
-        return view('master.dokter', compact('data', 'search', 'perPage'));
+        return view('master.dokter', compact('data', 'search', 'perPage', 'statusFilter', 'stats'));
+    }
+
+    public function toggleStatus($kd_dokter)
+    {
+        $dokter = DB::connection('dokter')->table('dokter')->where('kd_dokter', $kd_dokter)->first();
+        if ($dokter) {
+            $newStatus = $dokter->status == '1' ? '0' : '1';
+            DB::connection('dokter')->table('dokter')->where('kd_dokter', $kd_dokter)->update(['status' => $newStatus]);
+            
+            $statusLabel = $newStatus == '1' ? 'aktif' : 'tidak aktif';
+            return redirect()->back()->with('success', "Status dr. {$dokter->nm_dokter} berhasil diubah menjadi {$statusLabel}.");
+        }
+        return redirect()->back()->with('error', 'Dokter tidak ditemukan.');
     }
 
     public function poli(Request $request)

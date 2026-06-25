@@ -11,16 +11,23 @@ class RawatJalanController extends Controller
         $tgl_dari    = $request->query('tgl_dari',    date('Y-m-d'));
         $tgl_sampai  = $request->query('tgl_sampai',  date('Y-m-d'));
         $perPage     = $request->query('per_page', 20);
+        
+        $kd_dokter = session('user')->kd_dokter ?? null;
 
         // Pastikan tgl_dari tidak lebih dari tgl_sampai
         if ($tgl_dari > $tgl_sampai) {
             $tgl_sampai = $tgl_dari;
         }
 
-        // Global status counts for date range
-        $stats = \DB::table('reg_periksa')
-            ->whereBetween('tgl_registrasi', [$tgl_dari, $tgl_sampai])
-            ->selectRaw("
+        // Global/Scoped status counts for date range
+        $statsQuery = \DB::table('reg_periksa')
+            ->whereBetween('tgl_registrasi', [$tgl_dari, $tgl_sampai]);
+            
+        if ($kd_dokter) {
+            $statsQuery->where('kd_dokter', $kd_dokter);
+        }
+        
+        $stats = $statsQuery->selectRaw("
                 count(*) as total,
                 sum(case when stts = 'Belum' then 1 else 0 end) as belum,
                 sum(case when stts = 'Sudah' then 1 else 0 end) as sudah
@@ -31,21 +38,39 @@ class RawatJalanController extends Controller
         $totalBelum = $stats->belum ?? 0;
         $totalSudah = $stats->sudah ?? 0;
 
-        $antrian = \DB::table('reg_periksa')
+        $antrianQuery = \DB::table('reg_periksa')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
             ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
-            ->join('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
             ->join('penjab', 'reg_periksa.kd_pj', '=', 'penjab.kd_pj')
-            ->whereBetween('reg_periksa.tgl_registrasi', [$tgl_dari, $tgl_sampai])
-            ->select(
+            ->whereBetween('reg_periksa.tgl_registrasi', [$tgl_dari, $tgl_sampai]);
+            
+        if ($kd_dokter) {
+            $antrianQuery->where('reg_periksa.kd_dokter', $kd_dokter);
+        }
+
+        $antrian = $antrianQuery->select(
                 'reg_periksa.no_rawat', 'reg_periksa.no_reg', 'reg_periksa.jam_reg',
-                'reg_periksa.stts', 'reg_periksa.tgl_registrasi',
+                'reg_periksa.stts', 'reg_periksa.tgl_registrasi', 'reg_periksa.kd_dokter',
                 'pasien.no_rkm_medis', 'pasien.nm_pasien', 'pasien.umur', 'pasien.jk',
-                'poliklinik.nm_poli', 'dokter.nm_dokter', 'penjab.png_jawab as jaminan'
+                'poliklinik.nm_poli', 'penjab.png_jawab as jaminan'
             )
             ->orderBy('reg_periksa.tgl_registrasi', 'desc')
             ->orderBy('reg_periksa.jam_reg', 'desc')
             ->paginate($perPage);
+
+        // Ambil nama dokter dari database dokter secara terpisah
+        $kd_dokters = collect($antrian->items())->pluck('kd_dokter')->unique()->toArray();
+        if (!empty($kd_dokters)) {
+            $dokters = DB::connection('dokter')->table('dokter')
+                ->whereIn('kd_dokter', $kd_dokters)
+                ->pluck('nm_dokter', 'kd_dokter');
+        } else {
+            $dokters = collect();
+        }
+
+        foreach ($antrian->items() as $item) {
+            $item->nm_dokter = $dokters[$item->kd_dokter] ?? '-';
+        }
 
         // Append query parameters to pagination links
         $antrian->appends([
@@ -73,7 +98,7 @@ class RawatJalanController extends Controller
             ->get();
 
         $poliklinik = \DB::table('poliklinik')->where('status', '1')->get();
-        $dokter = \DB::table('dokter')->where('status', '1')->get();
+        $dokter = DB::connection('dokter')->table('dokter')->where('status', '1')->get();
         $penjab = \DB::table('penjab')->where('status', '1')->get();
 
         return view('rawat_jalan.create', compact('pasien', 'poliklinik', 'dokter', 'penjab'));
@@ -160,18 +185,17 @@ class RawatJalanController extends Controller
     {
         $no_rawat = urldecode($no_rawat);
 
-        // Fetch Main Registration Data
+        // Fetch Main Registration Data (Tanpa join dokter)
         $data = \DB::table('reg_periksa')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
             ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
-            ->join('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
             ->join('penjab', 'reg_periksa.kd_pj', '=', 'penjab.kd_pj')
             ->leftJoin('pemeriksaan_ralan', 'reg_periksa.no_rawat', '=', 'pemeriksaan_ralan.no_rawat')
             ->where('reg_periksa.no_rawat', $no_rawat)
             ->select(
-                'reg_periksa.no_rawat', 'reg_periksa.tgl_registrasi', 'reg_periksa.jam_reg', 'reg_periksa.p_jawab', 'reg_periksa.biaya_reg',
+                'reg_periksa.no_rawat', 'reg_periksa.tgl_registrasi', 'reg_periksa.jam_reg', 'reg_periksa.p_jawab', 'reg_periksa.biaya_reg', 'reg_periksa.kd_dokter',
                 'pasien.no_rkm_medis', 'pasien.nm_pasien', 'pasien.tgl_lahir', 'pasien.umur', 'pasien.jk', 'pasien.agama', 'pasien.alamat', 'pasien.no_tlp',
-                'poliklinik.nm_poli', 'dokter.nm_dokter as dpjp_1', 'penjab.png_jawab as jaminan',
+                'poliklinik.nm_poli', 'penjab.png_jawab as jaminan',
                 'pemeriksaan_ralan.keluhan'
             )
             ->first();
@@ -180,21 +204,38 @@ class RawatJalanController extends Controller
             return redirect('/rawat-jalan')->with('error', 'Data pasien tidak ditemukan.');
         }
 
+        // Ambil nama DPJP Utama dari database dokter
+        $main_doc = DB::connection('dokter')->table('dokter')->where('kd_dokter', $data->kd_dokter)->first();
+        $data->dpjp_1 = $main_doc->nm_dokter ?? '-';
+
         // Fetch Total Invoice (Biaya Registrasi + Tindakan Ralan dll) - Simplified for MVP
         $total_tindakan_dr = \DB::table('rawat_jl_dr')->where('no_rawat', $no_rawat)->sum('biaya_rawat');
         $total_tindakan_pr = \DB::table('rawat_jl_pr')->where('no_rawat', $no_rawat)->sum('biaya_rawat');
         $data->total_invoice = $data->biaya_reg + $total_tindakan_dr + $total_tindakan_pr;
 
-        // Fetch Additional Doctors (DPJP 2-7)
+        // Fetch Additional Doctors (DPJP 2-7) - Tanpa join dokter
         $dpjp_tambahan = \DB::table('reg_dpjp_tambahan')
-            ->join('dokter', 'reg_dpjp_tambahan.kd_dokter', '=', 'dokter.kd_dokter')
             ->where('reg_dpjp_tambahan.no_rawat', $no_rawat)
-            ->select('reg_dpjp_tambahan.urutan', 'reg_dpjp_tambahan.kd_dokter', 'dokter.nm_dokter')
+            ->select('reg_dpjp_tambahan.urutan', 'reg_dpjp_tambahan.kd_dokter')
             ->orderBy('reg_dpjp_tambahan.urutan', 'asc')
-            ->get()->keyBy('urutan');
+            ->get();
+
+        // Map nama dokter tambahan
+        $add_doc_ids = $dpjp_tambahan->pluck('kd_dokter')->unique()->toArray();
+        if (!empty($add_doc_ids)) {
+            $add_docs = DB::connection('dokter')->table('dokter')
+                ->whereIn('kd_dokter', $add_doc_ids)
+                ->pluck('nm_dokter', 'kd_dokter');
+        } else {
+            $add_docs = collect();
+        }
+        foreach ($dpjp_tambahan as $item) {
+            $item->nm_dokter = $add_docs[$item->kd_dokter] ?? '-';
+        }
+        $dpjp_tambahan = $dpjp_tambahan->keyBy('urutan');
 
         // All active doctors for dropdowns
-        $dokters = \DB::table('dokter')->where('status', '1')->get();
+        $dokters = DB::connection('dokter')->table('dokter')->where('status', '1')->get();
 
         // Fetch Patient Identifications
         $identifications = \DB::table('reg_patient_identification')
@@ -208,50 +249,80 @@ class RawatJalanController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        // 1. Fetch SOAP History (pemeriksaan_ralan) for this Patient (No. RM)
+        // 1. Fetch SOAP History (pemeriksaan_ralan) for this Patient (No. RM) - Tanpa join dokter
         $soap_history = \DB::table('pemeriksaan_ralan')
             ->join('reg_periksa', 'pemeriksaan_ralan.no_rawat', '=', 'reg_periksa.no_rawat')
-            ->join('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
             ->where('reg_periksa.no_rkm_medis', $data->no_rkm_medis)
             ->select(
                 'pemeriksaan_ralan.*',
                 'reg_periksa.tgl_registrasi',
                 'reg_periksa.jam_reg',
                 'reg_periksa.no_rawat as billing_no',
-                'dokter.nm_dokter as examiner'
+                'reg_periksa.kd_dokter'
             )
             ->orderBy('reg_periksa.tgl_registrasi', 'desc')
             ->orderBy('reg_periksa.jam_reg', 'desc')
             ->get();
 
-        // 2. Fetch Laboratory Results (completed - from periksa_lab)
+        $soap_doc_ids = $soap_history->pluck('kd_dokter')->unique()->toArray();
+        if (!empty($soap_doc_ids)) {
+            $soap_docs = DB::connection('dokter')->table('dokter')
+                ->whereIn('kd_dokter', $soap_doc_ids)
+                ->pluck('nm_dokter', 'kd_dokter');
+        } else {
+            $soap_docs = collect();
+        }
+        foreach ($soap_history as $soap) {
+            $soap->examiner = $soap_docs[$soap->kd_dokter] ?? '-';
+        }
+
+        // 2. Fetch Laboratory Results (completed - from periksa_lab) - Tanpa join dokter
         $lab_results = \DB::table('periksa_lab')
             ->join('jns_perawatan_lab', 'periksa_lab.kd_jenis_prw', '=', 'jns_perawatan_lab.kd_jenis_prw')
-            ->join('dokter', 'periksa_lab.kd_dokter', '=', 'dokter.kd_dokter')
             ->where('periksa_lab.no_rawat', $no_rawat)
             ->select(
                 'periksa_lab.*',
                 'jns_perawatan_lab.nm_perawatan as item_name',
-                'dokter.nm_dokter as examiner'
+                'periksa_lab.kd_dokter'
             )
             ->orderBy('periksa_lab.tgl_periksa', 'desc')
             ->get();
 
-        // 2b. Fetch Pending Lab Orders (from permintaan_lab)
+        $lab_doc_ids = $lab_results->pluck('kd_dokter')->unique()->toArray();
+        if (!empty($lab_doc_ids)) {
+            $lab_docs = DB::connection('dokter')->table('dokter')
+                ->whereIn('kd_dokter', $lab_doc_ids)
+                ->pluck('nm_dokter', 'kd_dokter');
+        } else {
+            $lab_docs = collect();
+        }
+        foreach ($lab_results as $lab) {
+            $lab->examiner = $lab_docs[$lab->kd_dokter] ?? '-';
+        }
+
+        // 2b. Fetch Pending Lab Orders (from permintaan_lab) - Tanpa join dokter
         $lab_pending = \DB::table('permintaan_lab')
-            ->join('dokter', 'permintaan_lab.dokter_perujuk', '=', 'dokter.kd_dokter')
             ->where('permintaan_lab.no_rawat', $no_rawat)
             ->select(
                 'permintaan_lab.noorder',
                 'permintaan_lab.tgl_permintaan',
                 'permintaan_lab.jam_permintaan',
-                'dokter.nm_dokter as dokter_perujuk_nama'
+                'permintaan_lab.dokter_perujuk'
             )
             ->orderBy('permintaan_lab.tgl_permintaan', 'desc')
             ->get();
 
-        // Add test names to pending orders
+        $pending_doc_ids = $lab_pending->pluck('dokter_perujuk')->unique()->toArray();
+        if (!empty($pending_doc_ids)) {
+            $pending_docs = DB::connection('dokter')->table('dokter')
+                ->whereIn('kd_dokter', $pending_doc_ids)
+                ->pluck('nm_dokter', 'kd_dokter');
+        } else {
+            $pending_docs = collect();
+        }
         foreach ($lab_pending as $pending) {
+            $pending->dokter_perujuk_nama = $pending_docs[$pending->dokter_perujuk] ?? '-';
+            
             $pending->test_names = \DB::table('permintaan_pemeriksaan_lab')
                 ->join('jns_perawatan_lab', 'permintaan_pemeriksaan_lab.kd_jenis_prw', '=', 'jns_perawatan_lab.kd_jenis_prw')
                 ->where('permintaan_pemeriksaan_lab.noorder', $pending->noorder)
@@ -259,18 +330,29 @@ class RawatJalanController extends Controller
                 ->implode(', ');
         }
 
-        // 3. Fetch Radiology Results (completed)
+        // 3. Fetch Radiology Results (completed) - Tanpa join dokter
         $rad_results = \DB::table('periksa_radiologi')
             ->join('jns_perawatan_radiologi', 'periksa_radiologi.kd_jenis_prw', '=', 'jns_perawatan_radiologi.kd_jenis_prw')
-            ->join('dokter', 'periksa_radiologi.kd_dokter', '=', 'dokter.kd_dokter')
             ->where('periksa_radiologi.no_rawat', $no_rawat)
             ->select(
                 'periksa_radiologi.*',
                 'jns_perawatan_radiologi.nm_perawatan as item_name',
-                'dokter.nm_dokter as examiner'
+                'periksa_radiologi.kd_dokter'
             )
             ->orderBy('periksa_radiologi.tgl_periksa', 'desc')
             ->get();
+
+        $rad_doc_ids = $rad_results->pluck('kd_dokter')->unique()->toArray();
+        if (!empty($rad_doc_ids)) {
+            $rad_docs = DB::connection('dokter')->table('dokter')
+                ->whereIn('kd_dokter', $rad_doc_ids)
+                ->pluck('nm_dokter', 'kd_dokter');
+        } else {
+            $rad_docs = collect();
+        }
+        foreach ($rad_results as $rad) {
+            $rad->examiner = $rad_docs[$rad->kd_dokter] ?? '-';
+        }
 
         return view('rawat_jalan.detail_registered', compact(
             'data', 'dpjp_tambahan', 'dokters', 'identifications', 'allergies',

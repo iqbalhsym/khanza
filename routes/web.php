@@ -114,6 +114,7 @@ Route::middleware('auth.session')->group(function () {
         Route::get('/',        [App\Http\Controllers\MasterController::class, 'pasien']); // Default to pasien
         Route::get('/pasien',  [App\Http\Controllers\MasterController::class, 'pasien']);
         Route::get('/dokter',  [App\Http\Controllers\MasterController::class, 'dokter']);
+        Route::post('/dokter/toggle-status/{kd_dokter}', [App\Http\Controllers\MasterController::class, 'toggleStatus']);
         Route::get('/poli',    [App\Http\Controllers\MasterController::class, 'poli']);
         Route::get('/obat',    [App\Http\Controllers\MasterController::class, 'obat']);
         Route::get('/kamar',   [App\Http\Controllers\MasterController::class, 'kamar']);

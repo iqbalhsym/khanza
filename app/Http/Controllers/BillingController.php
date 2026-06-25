@@ -16,16 +16,29 @@ class BillingController extends Controller
         
         $antrian = DB::table('reg_periksa')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
-            ->join('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
             ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
             ->where('reg_periksa.tgl_registrasi', $today)
             ->where('reg_periksa.status_bayar', 'Belum Bayar')
             ->where('reg_periksa.stts', 'Sudah') // Berhasil diperiksa Dokter
             ->select(
-                'reg_periksa.*', 'pasien.nm_pasien', 'dokter.nm_dokter', 'poliklinik.nm_poli'
+                'reg_periksa.*', 'pasien.nm_pasien', 'poliklinik.nm_poli'
             )
             ->orderBy('reg_periksa.jam_reg', 'desc')
             ->get();
+
+        // Map doctor names in memory
+        $kd_dokters = $antrian->pluck('kd_dokter')->unique()->filter()->toArray();
+        if (!empty($kd_dokters)) {
+            $dokters = DB::connection('dokter')->table('dokter')
+                ->whereIn('kd_dokter', $kd_dokters)
+                ->pluck('nm_dokter', 'kd_dokter');
+        } else {
+            $dokters = collect();
+        }
+
+        foreach ($antrian as $item) {
+            $item->nm_dokter = $dokters[$item->kd_dokter] ?? '-';
+        }
 
         return view('billing.index', compact('antrian'));
     }
@@ -33,16 +46,24 @@ class BillingController extends Controller
     public function show($no_rawat)
     {
         $no_rawat = urldecode($no_rawat);
+        
         $reg = DB::table('reg_periksa')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
-            ->join('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
             ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
             ->join('penjab', 'reg_periksa.kd_pj', '=', 'penjab.kd_pj')
             ->where('reg_periksa.no_rawat', $no_rawat)
-            ->select('reg_periksa.*', 'pasien.nm_pasien', 'pasien.alamat', 'dokter.nm_dokter', 'poliklinik.nm_poli', 'penjab.png_jawab')
+            ->select('reg_periksa.*', 'pasien.nm_pasien', 'pasien.alamat', 'poliklinik.nm_poli', 'penjab.png_jawab')
             ->first();
 
         if (!$reg) return redirect()->back()->with('error', 'Data registrasi tidak ditemukan.');
+
+        // Get doctor name from connection 'dokter'
+        if (!empty($reg->kd_dokter)) {
+            $doc = DB::connection('dokter')->table('dokter')->where('kd_dokter', $reg->kd_dokter)->first();
+            $reg->nm_dokter = $doc->nm_dokter ?? '-';
+        } else {
+            $reg->nm_dokter = '-';
+        }
 
         // 1. Biaya Registrasi
         $biaya_reg = $reg->biaya_reg;

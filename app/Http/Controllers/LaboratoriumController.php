@@ -22,13 +22,12 @@ class LaboratoriumController extends Controller
             $query = DB::table('detail_periksa_lab')
                 ->join('reg_periksa', 'detail_periksa_lab.no_rawat', '=', 'reg_periksa.no_rawat')
                 ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
-                ->join('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
                 ->select(
                     'detail_periksa_lab.tgl_periksa as tgl_permintaan',
                     'detail_periksa_lab.jam as jam_permintaan',
                     'detail_periksa_lab.no_rawat',
                     'pasien.nm_pasien',
-                    'dokter.nm_dokter as dokter_pengirim',
+                    'reg_periksa.kd_dokter',
                     DB::raw("'selesai' as stts_data")
                 )
                 ->distinct();
@@ -37,11 +36,10 @@ class LaboratoriumController extends Controller
             $query = DB::table('permintaan_lab')
                 ->join('reg_periksa', 'permintaan_lab.no_rawat', '=', 'reg_periksa.no_rawat')
                 ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
-                ->join('dokter', 'permintaan_lab.dokter_perujuk', '=', 'dokter.kd_dokter')
                 ->select(
                     'permintaan_lab.*',
                     'pasien.nm_pasien',
-                    'dokter.nm_dokter as dokter_pengirim',
+                    'permintaan_lab.dokter_perujuk as kd_dokter',
                     DB::raw("'antrian' as stts_data")
                 );
         }
@@ -59,6 +57,20 @@ class LaboratoriumController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        // Map doctor names in memory
+        $kd_dokters = collect($data->items())->pluck('kd_dokter')->unique()->filter()->toArray();
+        if (!empty($kd_dokters)) {
+            $dokters = DB::connection('dokter')->table('dokter')
+                ->whereIn('kd_dokter', $kd_dokters)
+                ->pluck('nm_dokter', 'kd_dokter');
+        } else {
+            $dokters = collect();
+        }
+
+        foreach ($data->items() as $item) {
+            $item->dokter_pengirim = $dokters[$item->kd_dokter] ?? '-';
+        }
+
         return view('laboratorium.index', compact('data', 'tab'));
     }
 
@@ -71,7 +83,6 @@ class LaboratoriumController extends Controller
             ->join('reg_periksa', 'periksa_lab.no_rawat', '=', 'reg_periksa.no_rawat')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
             ->join('jns_perawatan_lab', 'periksa_lab.kd_jenis_prw', '=', 'jns_perawatan_lab.kd_jenis_prw')
-            ->join('dokter', 'periksa_lab.kd_dokter', '=', 'dokter.kd_dokter')
             ->select(
                 'periksa_lab.tgl_periksa as tgl_permintaan',
                 'periksa_lab.jam as jam_permintaan',
@@ -79,7 +90,7 @@ class LaboratoriumController extends Controller
                 DB::raw("'' as noorder"),
                 'pasien.nm_pasien',
                 'jns_perawatan_lab.nm_perawatan',
-                'dokter.nm_dokter as dokter_pengirim'
+                'periksa_lab.kd_dokter'
             );
 
         if ($request->has('search') && !empty($request->search)) {
@@ -94,6 +105,20 @@ class LaboratoriumController extends Controller
             ->orderBy('periksa_lab.jam', 'desc')
             ->paginate(20)
             ->withQueryString();
+
+        // Map doctor names in memory
+        $kd_dokters = collect($data->items())->pluck('kd_dokter')->unique()->filter()->toArray();
+        if (!empty($kd_dokters)) {
+            $dokters = DB::connection('dokter')->table('dokter')
+                ->whereIn('kd_dokter', $kd_dokters)
+                ->pluck('nm_dokter', 'kd_dokter');
+        } else {
+            $dokters = collect();
+        }
+
+        foreach ($data->items() as $item) {
+            $item->dokter_pengirim = $dokters[$item->kd_dokter] ?? '-';
+        }
 
         $tab = 'hasil';
         return view('laboratorium.index', compact('data', 'tab'));
@@ -131,7 +156,7 @@ class LaboratoriumController extends Controller
         $petugas_list = DB::table('petugas')->select('nip', 'nama')->where('status', '1')->get();
 
         // Get doctors list
-        $dokter_list = DB::table('dokter')->select('kd_dokter', 'nm_dokter')->where('status', '1')->get();
+        $dokter_list = DB::connection('dokter')->table('dokter')->select('kd_dokter', 'nm_dokter')->where('status', '1')->get();
 
         return view('laboratorium.input', compact('request', 'testTypes', 'petugas_list', 'dokter_list'));
     }
@@ -245,15 +270,23 @@ class LaboratoriumController extends Controller
     public function createRequest($no_rawat)
     {
         $no_rawat = urldecode($no_rawat);
+        
         $reg = DB::table('reg_periksa')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
             ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
-            ->join('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
             ->where('no_rawat', $no_rawat)
-            ->select('reg_periksa.*', 'pasien.nm_pasien', 'poliklinik.nm_poli', 'dokter.nm_dokter')
+            ->select('reg_periksa.*', 'pasien.nm_pasien', 'poliklinik.nm_poli')
             ->first();
 
         if (!$reg) return redirect()->back()->with('error', 'Data pendaftaran tidak ditemukan.');
+
+        // Get doctor name from connection 'dokter'
+        if (!empty($reg->kd_dokter)) {
+            $doc = DB::connection('dokter')->table('dokter')->where('kd_dokter', $reg->kd_dokter)->first();
+            $reg->nm_dokter = $doc->nm_dokter ?? '-';
+        } else {
+            $reg->nm_dokter = '-';
+        }
 
         $jenis_pemeriksaan = DB::table('jns_perawatan_lab')
             ->where('status', '1')
@@ -336,20 +369,27 @@ class LaboratoriumController extends Controller
         $no_rawat = urldecode($no_rawat);
         $tgl = urldecode($tgl);
         $jam = urldecode($jam);
-
+        
         $patientInfo = DB::table('periksa_lab')
             ->join('reg_periksa', 'periksa_lab.no_rawat', '=', 'reg_periksa.no_rawat')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
-            ->join('dokter', 'periksa_lab.kd_dokter', '=', 'dokter.kd_dokter')
             ->where([
                 ['periksa_lab.no_rawat', $no_rawat],
                 ['periksa_lab.tgl_periksa', $tgl],
                 ['periksa_lab.jam', $jam]
             ])
-            ->select('periksa_lab.*', 'reg_periksa.no_rkm_medis', 'pasien.nm_pasien', 'pasien.tgl_lahir', 'pasien.jk', 'dokter.nm_dokter')
+            ->select('periksa_lab.*', 'reg_periksa.no_rkm_medis', 'pasien.nm_pasien', 'pasien.tgl_lahir', 'pasien.jk')
             ->first();
 
         if (!$patientInfo) return redirect()->back()->with('error', 'Hasil lab tidak ditemukan.');
+
+        // Get doctor name from connection 'dokter'
+        if (!empty($patientInfo->kd_dokter)) {
+            $doc = DB::connection('dokter')->table('dokter')->where('kd_dokter', $patientInfo->kd_dokter)->first();
+            $patientInfo->nm_dokter = $doc->nm_dokter ?? '-';
+        } else {
+            $patientInfo->nm_dokter = '-';
+        }
 
         $results = DB::table('detail_periksa_lab')
             ->join('template_laboratorium', 'detail_periksa_lab.id_template', '=', 'template_laboratorium.id_template')

@@ -20,14 +20,13 @@ class RadiologiController extends Controller
                 ->join('reg_periksa', 'periksa_radiologi.no_rawat', '=', 'reg_periksa.no_rawat')
                 ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
                 ->join('jns_perawatan_radiologi', 'periksa_radiologi.kd_jenis_prw', '=', 'jns_perawatan_radiologi.kd_jenis_prw')
-                ->join('dokter', 'periksa_radiologi.kd_dokter', '=', 'dokter.kd_dokter')
                 ->select(
                     'periksa_radiologi.tgl_periksa as tgl_permintaan',
                     'periksa_radiologi.jam as jam_permintaan',
                     'periksa_radiologi.no_rawat',
+                    'periksa_radiologi.kd_dokter',
                     'pasien.nm_pasien',
                     'jns_perawatan_radiologi.nm_perawatan',
-                    'dokter.nm_dokter as dokter_pengirim',
                     DB::raw("'selesai' as stts_data")
                 );
         } else {
@@ -35,11 +34,10 @@ class RadiologiController extends Controller
             $query = DB::table('permintaan_radiologi')
                 ->join('reg_periksa', 'permintaan_radiologi.no_rawat', '=', 'reg_periksa.no_rawat')
                 ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
-                ->join('dokter', 'permintaan_radiologi.dokter_perujuk', '=', 'dokter.kd_dokter')
                 ->select(
                     'permintaan_radiologi.*',
+                    'permintaan_radiologi.dokter_perujuk as kd_dokter',
                     'pasien.nm_pasien',
-                    'dokter.nm_dokter as dokter_pengirim',
                     DB::raw("'antrian' as stts_data")
                 );
         }
@@ -56,6 +54,20 @@ class RadiologiController extends Controller
             ->orderBy('jam_permintaan', 'desc')
             ->paginate(20)
             ->withQueryString();
+
+        // Ambil nama dokter dari database dokter secara terpisah
+        $kd_dokters = collect($data->items())->pluck('kd_dokter')->unique()->toArray();
+        if (!empty($kd_dokters)) {
+            $dokters = DB::connection('dokter')->table('dokter')
+                ->whereIn('kd_dokter', $kd_dokters)
+                ->pluck('nm_dokter', 'kd_dokter');
+        } else {
+            $dokters = collect();
+        }
+
+        foreach ($data->items() as $item) {
+            $item->dokter_pengirim = $dokters[$item->kd_dokter] ?? '-';
+        }
 
         return view('radiologi.index', compact('data', 'tab'));
     }
@@ -164,7 +176,7 @@ class RadiologiController extends Controller
             ->select('jns_perawatan_radiologi.kd_jenis_prw', 'jns_perawatan_radiologi.nm_perawatan')
             ->get();
 
-        $dokterRadiologi = DB::table('dokter')->where('status', '1')->limit(50)->get();
+        $dokterRadiologi = DB::connection('dokter')->table('dokter')->where('status', '1')->limit(50)->get();
         $petugas = DB::table('petugas')->where('status', '1')->limit(50)->get();
 
         return view('radiologi.pemeriksaan', compact('request', 'testTypes', 'dokterRadiologi', 'petugas'));

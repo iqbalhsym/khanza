@@ -92,6 +92,27 @@ public function loginForm()
                 // Coba ambil nama asli dari AD jika tersedia, jika tidak pakai username
                 $user->nama = isset($entries[0]['displayname'][0]) ? $entries[0]['displayname'][0] : $username; 
                 
+                // Cari data dokter di database terpisah 'dokter'
+                // Opsi A: Cari berdasarkan kd_dokter yang sama dengan username AD
+                $doctor = DB::connection('dokter')->table('dokter')
+                    ->where('kd_dokter', $username)
+                    ->first();
+
+                // Opsi B (Fallback): Cari berdasarkan email jika atribut email tersedia di AD
+                if (!$doctor && isset($entries[0]['mail'][0])) {
+                    $ad_email = $entries[0]['mail'][0];
+                    $doctor = DB::connection('dokter')->table('dokter')
+                        ->where('email', $ad_email)
+                        ->first();
+                }
+
+                if ($doctor) {
+                    $user->kd_dokter = $doctor->kd_dokter;
+                    $user->nama = $doctor->nm_dokter; // Gunakan nama resmi dokter dari database
+                } else {
+                    $user->kd_dokter = null; // Admin atau staf non-dokter
+                }
+
                 Session::put('user', $user);
                 return redirect('/dashboard');
             } else {

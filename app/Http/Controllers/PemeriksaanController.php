@@ -17,15 +17,24 @@ class PemeriksaanController extends Controller
         $reg = DB::table('reg_periksa')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
             ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
-            ->join('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
             ->join('penjab', 'reg_periksa.kd_pj', '=', 'penjab.kd_pj')
             ->where('reg_periksa.no_rawat', $no_rawat)
             ->select(
                 'reg_periksa.*', 
                 'pasien.nm_pasien', 'pasien.tgl_lahir', 'pasien.jk',
-                'poliklinik.nm_poli', 'dokter.nm_dokter'
+                'poliklinik.nm_poli'
             )
             ->first();
+
+        if ($reg) {
+            // Get doctor name from connection 'dokter'
+            if (!empty($reg->kd_dokter)) {
+                $doc = DB::connection('dokter')->table('dokter')->where('kd_dokter', $reg->kd_dokter)->first();
+                $reg->nm_dokter = $doc->nm_dokter ?? '-';
+            } else {
+                $reg->nm_dokter = '-';
+            }
+        }
 
         if (!$reg) {
             return redirect('/rawat-jalan')->with('error', 'Data pendaftaran tidak ditemukan.');

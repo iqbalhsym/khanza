@@ -17,20 +17,29 @@ class ResepController extends Controller
         $resep = DB::table('resep_obat')
             ->join('reg_periksa', 'resep_obat.no_rawat', '=', 'reg_periksa.no_rawat')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
-            ->join('dokter', 'resep_obat.kd_dokter', '=', 'dokter.kd_dokter')
             ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
             ->where('resep_obat.tgl_peresepan', $today)
             ->select(
                 'resep_obat.*', 
                 'reg_periksa.no_rkm_medis', 
                 'pasien.nm_pasien', 
-                'dokter.nm_dokter', 
                 'poliklinik.nm_poli'
             )
             ->orderBy('resep_obat.jam_peresepan', 'desc')
             ->get();
 
+        // Ambil nama dokter dari database dokter secara terpisah
+        $kd_dokters = $resep->pluck('kd_dokter')->unique()->toArray();
+        if (!empty($kd_dokters)) {
+            $dokters = DB::connection('dokter')->table('dokter')
+                ->whereIn('kd_dokter', $kd_dokters)
+                ->pluck('nm_dokter', 'kd_dokter');
+        } else {
+            $dokters = collect();
+        }
+
         foreach ($resep as $r) {
+            $r->nm_dokter = $dokters[$r->kd_dokter] ?? '-';
             $r->items = DB::table('resep_dokter')
                 ->join('databarang', 'resep_dokter.kode_brng', '=', 'databarang.kode_brng')
                 ->where('no_resep', $r->no_resep)
