@@ -110,6 +110,7 @@
             </ul>
           </li>
 
+          {{-- HIDE LABORATUROM, RADIOLOGI, FARMASI, BILLING MENUS
           <!-- Laboratorium -->
           <li class="nav-item dropdown">
             <a href="#" class="nav-link dropdown-toggle @if(request()->is('laboratorium*')) active @endif"
@@ -170,6 +171,7 @@
               Billing
             </a>
           </li>
+          --}}
 
           <!-- Master Data -->
           <li class="nav-item dropdown">
