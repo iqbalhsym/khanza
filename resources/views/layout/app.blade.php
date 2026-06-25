@@ -230,11 +230,13 @@
           <div class="nav-item dropdown">
             <a href="#" class="nav-link dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown"
                style="color: rgba(255,255,255,0.85); font-size: 13px;">
-              <span class="avatar avatar-sm" style="background: rgba(255,255,255,0.25); color: #fff; font-weight: 700;">A</span>
-              <span class="d-none d-md-inline">Administrator</span>
+              <span class="avatar avatar-sm" style="background: rgba(255,255,255,0.25); color: #fff; font-weight: 700;">
+                {{ substr(session('user')->nama ?? 'A', 0, 1) }}
+              </span>
+              <span class="d-none d-md-inline">{{ session('user')->nama ?? 'Administrator' }}</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="margin-top: 8px;">
-              <li><h6 class="dropdown-header">Super Admin</h6></li>
+              <li><h6 class="dropdown-header">{{ session('user')->usere ?? 'Super Admin' }}</h6></li>
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item text-danger" href="{{ url('/logout') }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>

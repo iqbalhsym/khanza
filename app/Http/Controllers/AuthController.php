@@ -21,12 +21,12 @@ public function loginForm()
             return back()->with('error', 'Ekstensi php-ldap belum terinstal di server. Silakan hubungi administrator.');
         }
 
-        $ldap_host = env('LDAP_HOST', '10.121.1.162');
-        $ldap_port = env('LDAP_PORT', 389);
-        $ldap_domain = env('LDAP_DOMAIN', 'domain-anda.local'); // Opsional, mungkin tidak dipakai di skenario 2
-        $ldap_base_dn = env('LDAP_BASE_DN', '');
-        $ldap_admin = env('LDAP_ADMIN_USER', '');
-        $ldap_admin_pass = env('LDAP_ADMIN_PASS', '');
+        $ldap_host = config('ldap.host', '10.121.1.162');
+        $ldap_port = config('ldap.port', 389);
+        $ldap_domain = config('ldap.domain', 'domain-anda.local'); // Opsional, mungkin tidak dipakai di skenario 2
+        $ldap_base_dn = config('ldap.base_dn', '');
+        $ldap_admin = config('ldap.admin_user', '');
+        $ldap_admin_pass = config('ldap.admin_pass', '');
         
         $username = $request->username;
         $password = $request->password;
@@ -62,8 +62,8 @@ public function loginForm()
                 return back()->with('error', 'Gagal konfigurasi LDAP: Koneksi Service Account ditolak. Periksa kredensial Admin LDAP di file .env');
             }
 
-            // TAHAP 2: PENCARIAN USERNAME (sAMAccountName)
-            $search_filter = "(sAMAccountName={$username})";
+            // TAHAP 2: PENCARIAN USERNAME (sAMAccountName atau userPrincipalName)
+            $search_filter = "(|(sAMAccountName={$username})(userPrincipalName={$username}))";
             $search = @ldap_search($ldap_conn, $ldap_base_dn, $search_filter);
             
             if (!$search) {
