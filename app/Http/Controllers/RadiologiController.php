@@ -80,18 +80,68 @@ class RadiologiController extends Controller
         $no_rawat = urldecode($no_rawat);
         $reg = DB::table('reg_periksa')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+            ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
             ->where('no_rawat', $no_rawat)
-            ->select('reg_periksa.*', 'pasien.nm_pasien')
+            ->select('reg_periksa.*', 'pasien.nm_pasien', 'poliklinik.nm_poli')
             ->first();
 
         if (!$reg) return redirect()->back()->with('error', 'Data pendaftaran tidak ditemukan.');
 
-        $jenis_pemeriksaan = DB::table('jns_perawatan_radiologi')
-            ->where('status', '1')
-            ->orderBy('nm_perawatan', 'asc')
+        // Get doctor name from connection 'dokter'
+        if (!empty($reg->kd_dokter)) {
+            $doc = DB::connection('dokter')->table('dokter')->where('kd_dokter', $reg->kd_dokter)->first();
+            $reg->nm_dokter = $doc->nm_dokter ?? '-';
+        } else {
+            $reg->nm_dokter = '-';
+        }
+
+        // Fetch completed radiology results
+        $rad_results = DB::table('periksa_radiologi')
+            ->join('jns_perawatan_radiologi', 'periksa_radiologi.kd_jenis_prw', '=', 'jns_perawatan_radiologi.kd_jenis_prw')
+            ->where('periksa_radiologi.no_rawat', $no_rawat)
+            ->select('periksa_radiologi.*', 'jns_perawatan_radiologi.nm_perawatan as item_name', 'periksa_radiologi.kd_dokter')
+            ->orderBy('periksa_radiologi.tgl_periksa', 'desc')
+            ->orderBy('periksa_radiologi.jam', 'desc')
             ->get();
 
-        return view('radiologi.request', compact('reg', 'jenis_pemeriksaan'));
+        $rad_doc_ids = $rad_results->pluck('kd_dokter')->unique()->toArray();
+        if (!empty($rad_doc_ids)) {
+            $rad_docs = DB::connection('dokter')->table('dokter')
+                ->whereIn('kd_dokter', $rad_doc_ids)
+                ->pluck('nm_dokter', 'kd_dokter');
+        } else {
+            $rad_docs = collect();
+        }
+        foreach ($rad_results as $rad) {
+            $rad->examiner = $rad_docs[$rad->kd_dokter] ?? '-';
+        }
+
+        // Fetch pending radiology requests
+        $rad_pending = DB::table('permintaan_radiologi')
+            ->where('permintaan_radiologi.no_rawat', $no_rawat)
+            ->select('permintaan_radiologi.noorder', 'permintaan_radiologi.tgl_permintaan', 'permintaan_radiologi.jam_permintaan', 'permintaan_radiologi.dokter_perujuk')
+            ->orderBy('permintaan_radiologi.tgl_permintaan', 'desc')
+            ->get();
+
+        $pending_doc_ids = $rad_pending->pluck('dokter_perujuk')->unique()->toArray();
+        if (!empty($pending_doc_ids)) {
+            $pending_docs = DB::connection('dokter')->table('dokter')
+                ->whereIn('kd_dokter', $pending_doc_ids)
+                ->pluck('nm_dokter', 'kd_dokter');
+        } else {
+            $pending_docs = collect();
+        }
+        foreach ($rad_pending as $pending) {
+            $pending->dokter_perujuk_nama = $pending_docs[$pending->dokter_perujuk] ?? '-';
+            
+            $pending->test_names = DB::table('permintaan_pemeriksaan_radiologi')
+                ->join('jns_perawatan_radiologi', 'permintaan_pemeriksaan_radiologi.kd_jenis_prw', '=', 'jns_perawatan_radiologi.kd_jenis_prw')
+                ->where('permintaan_pemeriksaan_radiologi.noorder', $pending->noorder)
+                ->pluck('jns_perawatan_radiologi.nm_perawatan')
+                ->implode(', ');
+        }
+
+        return view('radiologi.request', compact('reg', 'rad_results', 'rad_pending'));
     }
 
     /**
@@ -99,61 +149,7 @@ class RadiologiController extends Controller
      */
     public function storeRequest(Request $request)
     {
-        $request->validate([
-            'no_rawat' => 'required',
-            'kd_jenis_prw' => 'required|array|min:1'
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            $prefix = 'PR' . date('Ymd');
-            $last = DB::table('permintaan_radiologi')
-                ->where('noorder', 'like', $prefix . '%')
-                ->orderBy('noorder', 'desc')
-                ->first();
-            
-            if ($last) {
-                $last_seq = (int) substr($last->noorder, -4);
-                $next_seq = str_pad($last_seq + 1, 4, '0', STR_PAD_LEFT);
-            } else {
-                $next_seq = '0001';
-            }
-            $noorder = $prefix . $next_seq;
-
-            $reg = DB::table('reg_periksa')->where('no_rawat', $request->no_rawat)->first();
-            $status = $reg->status_lanjut == 'Ranap' ? 'ranap' : 'ralan';
-
-            DB::table('permintaan_radiologi')->insert([
-                'noorder'          => $noorder,
-                'no_rawat'         => $request->no_rawat,
-                'tgl_permintaan'   => date('Y-m-d'),
-                'jam_permintaan'   => date('H:i:s'),
-                'tgl_sampel'       => date('Y-m-d'),
-                'jam_sampel'       => date('H:i:s'),
-                'tgl_hasil'        => date('Y-m-d'),
-                'jam_hasil'        => date('H:i:s'),
-                'dokter_perujuk'   => $reg->kd_dokter,
-                'status'           => $status,
-                'informasi_tambahan' => '-',
-                'diagnosa_klinis'  => '-'
-            ]);
-
-            foreach ($request->kd_jenis_prw as $kd_jenis) {
-                DB::table('permintaan_pemeriksaan_radiologi')->insert([
-                    'noorder'      => $noorder,
-                    'kd_jenis_prw' => $kd_jenis,
-                    'stts_bayar'   => 'Belum'
-                ]);
-            }
-
-            DB::commit();
-            return redirect('/radiologi')->with('success', 'Rujukan Radiologi berhasil dibuat. No Order: ' . $noorder);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal membuat rujukan: ' . $e->getMessage());
-        }
+        abort(403, 'Aksi ini tidak diizinkan. Pembuatan rujukan hanya dapat dilakukan melalui aplikasi SIMKES Khanza (JAR).');
     }
 
     /**

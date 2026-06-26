@@ -253,10 +253,21 @@ class RawatJalanController extends Controller
             ->get();
 
         // 1. Fetch SOAP History (pemeriksaan_ralan) for this Patient (No. RM) - Tanpa join dokter
-        $soap_history = \DB::table('pemeriksaan_ralan')
+        $soap_dari = request('soap_dari');
+        $soap_sampai = request('soap_sampai');
+
+        $soapQuery = \DB::table('pemeriksaan_ralan')
             ->join('reg_periksa', 'pemeriksaan_ralan.no_rawat', '=', 'reg_periksa.no_rawat')
-            ->where('reg_periksa.no_rkm_medis', $data->no_rkm_medis)
-            ->select(
+            ->where('reg_periksa.no_rkm_medis', $data->no_rkm_medis);
+
+        if ($soap_dari) {
+            $soapQuery->where('reg_periksa.tgl_registrasi', '>=', $soap_dari);
+        }
+        if ($soap_sampai) {
+            $soapQuery->where('reg_periksa.tgl_registrasi', '<=', $soap_sampai);
+        }
+
+        $soap_history = $soapQuery->select(
                 'pemeriksaan_ralan.*',
                 'reg_periksa.tgl_registrasi',
                 'reg_periksa.jam_reg',

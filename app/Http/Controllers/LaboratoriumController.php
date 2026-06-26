@@ -288,12 +288,53 @@ class LaboratoriumController extends Controller
             $reg->nm_dokter = '-';
         }
 
-        $jenis_pemeriksaan = DB::table('jns_perawatan_lab')
-            ->where('status', '1')
-            ->orderBy('nm_perawatan', 'asc')
+        // Fetch completed results
+        $lab_results = DB::table('periksa_lab')
+            ->join('jns_perawatan_lab', 'periksa_lab.kd_jenis_prw', '=', 'jns_perawatan_lab.kd_jenis_prw')
+            ->where('periksa_lab.no_rawat', $no_rawat)
+            ->select('periksa_lab.*', 'jns_perawatan_lab.nm_perawatan as item_name', 'periksa_lab.kd_dokter')
+            ->orderBy('periksa_lab.tgl_periksa', 'desc')
+            ->orderBy('periksa_lab.jam', 'desc')
             ->get();
 
-        return view('laboratorium.request', compact('reg', 'jenis_pemeriksaan'));
+        $lab_doc_ids = $lab_results->pluck('kd_dokter')->unique()->toArray();
+        if (!empty($lab_doc_ids)) {
+            $lab_docs = DB::connection('dokter')->table('dokter')
+                ->whereIn('kd_dokter', $lab_doc_ids)
+                ->pluck('nm_dokter', 'kd_dokter');
+        } else {
+            $lab_docs = collect();
+        }
+        foreach ($lab_results as $lab) {
+            $lab->examiner = $lab_docs[$lab->kd_dokter] ?? '-';
+        }
+
+        // Fetch pending lab requests
+        $lab_pending = DB::table('permintaan_lab')
+            ->where('permintaan_lab.no_rawat', $no_rawat)
+            ->select('permintaan_lab.noorder', 'permintaan_lab.tgl_permintaan', 'permintaan_lab.jam_permintaan', 'permintaan_lab.dokter_perujuk')
+            ->orderBy('permintaan_lab.tgl_permintaan', 'desc')
+            ->get();
+
+        $pending_doc_ids = $lab_pending->pluck('dokter_perujuk')->unique()->toArray();
+        if (!empty($pending_doc_ids)) {
+            $pending_docs = DB::connection('dokter')->table('dokter')
+                ->whereIn('kd_dokter', $pending_doc_ids)
+                ->pluck('nm_dokter', 'kd_dokter');
+        } else {
+            $pending_docs = collect();
+        }
+        foreach ($lab_pending as $pending) {
+            $pending->dokter_perujuk_nama = $pending_docs[$pending->dokter_perujuk] ?? '-';
+            
+            $pending->test_names = DB::table('permintaan_pemeriksaan_lab')
+                ->join('jns_perawatan_lab', 'permintaan_pemeriksaan_lab.kd_jenis_prw', '=', 'jns_perawatan_lab.kd_jenis_prw')
+                ->where('permintaan_pemeriksaan_lab.noorder', $pending->noorder)
+                ->pluck('jns_perawatan_lab.nm_perawatan')
+                ->implode(', ');
+        }
+
+        return view('laboratorium.request', compact('reg', 'lab_results', 'lab_pending'));
     }
 
     /**
@@ -301,64 +342,7 @@ class LaboratoriumController extends Controller
      */
     public function storeRequest(Request $request)
     {
-        $request->validate([
-            'no_rawat' => 'required',
-            'kd_jenis_prw' => 'required|array|min:1'
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            // Generate noorder: PKYYYYMMDDXXXX
-            $prefix = 'PK' . date('Ymd');
-            $last = DB::table('permintaan_lab')
-                ->where('noorder', 'like', $prefix . '%')
-                ->orderBy('noorder', 'desc')
-                ->first();
-            
-            if ($last) {
-                $last_seq = (int) substr($last->noorder, -4);
-                $next_seq = str_pad($last_seq + 1, 4, '0', STR_PAD_LEFT);
-            } else {
-                $next_seq = '0001';
-            }
-            $noorder = $prefix . $next_seq;
-
-            $reg = DB::table('reg_periksa')->where('no_rawat', $request->no_rawat)->first();
-            $status = $reg->status_lanjut == 'Ranap' ? 'ranap' : 'ralan';
-
-            // Insert into permintaan_lab
-            DB::table('permintaan_lab')->insert([
-                'noorder'          => $noorder,
-                'no_rawat'         => $request->no_rawat,
-                'tgl_permintaan'   => date('Y-m-d'),
-                'jam_permintaan'   => date('H:i:s'),
-                'tgl_sampel'       => date('Y-m-d'),
-                'jam_sampel'       => date('H:i:s'),
-                'tgl_hasil'        => date('Y-m-d'),
-                'jam_hasil'        => date('H:i:s'),
-                'dokter_perujuk'   => $reg->kd_dokter,
-                'status'           => $status,
-                'informasi_tambahan' => '-',
-                'diagnosa_klinis'  => '-'
-            ]);
-
-            // Insert into permintaan_pemeriksaan_lab
-            foreach ($request->kd_jenis_prw as $kd_jenis) {
-                DB::table('permintaan_pemeriksaan_lab')->insert([
-                    'noorder'      => $noorder,
-                    'kd_jenis_prw' => $kd_jenis,
-                    'stts_bayar'   => 'Belum'
-                ]);
-            }
-
-            DB::commit();
-            return redirect('/laboratorium')->with('success', 'Rujukan Laboratorium berhasil dibuat. No Order: ' . $noorder);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal membuat rujukan: ' . $e->getMessage());
-        }
+        abort(403, 'Aksi ini tidak diizinkan. Pembuatan rujukan hanya dapat dilakukan melalui aplikasi SIMKES Khanza (JAR).');
     }
 
     /**

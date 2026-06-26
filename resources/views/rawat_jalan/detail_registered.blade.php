@@ -202,6 +202,18 @@
                 <span class="fw-bold text-uppercase" style="font-size:10px;color:#64748b;letter-spacing:.5px;">📋 Riwayat SOAP</span>
                 <span class="badge bg-secondary-lt" style="font-size:10px;">{{ $soap_history->count() }} records</span>
               </div>
+              <div class="px-2 py-1.5 border-bottom bg-light" style="flex-shrink:0;">
+                <form method="GET" action="" class="d-flex align-items-center gap-1 flex-wrap" style="font-size:10px;">
+                  <span class="text-muted">Dari:</span>
+                  <input type="date" name="soap_dari" value="{{ request('soap_dari') }}" class="form-control form-control-sm py-0 px-1" style="font-size:10px; height:22px; width:110px;">
+                  <span class="text-muted">s/d:</span>
+                  <input type="date" name="soap_sampai" value="{{ request('soap_sampai') }}" class="form-control form-control-sm py-0 px-1" style="font-size:10px; height:22px; width:110px;">
+                  <button type="submit" class="btn btn-xs btn-primary py-0 px-1.5" style="font-size:9px; height:22px;">Filter</button>
+                  @if(request('soap_dari') || request('soap_sampai'))
+                    <a href="{{ url('/rawat-jalan/registered/' . urlencode($data->no_rawat)) }}" class="btn btn-xs btn-outline-secondary py-0 px-1.5" style="font-size:9px; height:22px; line-height:20px;">Reset</a>
+                  @endif
+                </form>
+              </div>
               <div style="flex:1;overflow-y:auto;">
                 @forelse($soap_history as $soap)
                 <div class="px-2 py-1 border-bottom" style="font-size:11px;">
@@ -284,37 +296,34 @@
       <div style="flex:1;overflow-y:auto;">
         {{-- Pending Orders --}}
         @if($lab_pending->count() > 0)
-        <div style="background:#fff7ed;border-bottom:1px solid #fed7aa;padding:3px 8px;">
-          <span style="font-size:10px;font-weight:700;color:#c2410c;text-transform:uppercase;letter-spacing:.4px;">⏳ Menunggu Input</span>
+        @php $pending = $lab_pending->first(); @endphp
+        <div style="background:#fff7ed;border-bottom:1px solid #fed7aa;padding:4px 8px;">
+          <span style="font-size:10px;font-weight:700;color:#c2410c;text-transform:uppercase;letter-spacing:.4px;">⏳ Menunggu Hasil (Terbaru)</span>
         </div>
-        @foreach($lab_pending as $pending)
-        <div class="d-flex align-items-start gap-1 px-2 py-1 border-bottom" style="font-size:11px;background:#fffbf7;">
+        <div class="d-flex align-items-start gap-1 p-2.5 border-bottom" style="font-size:12.5px;background:#fffbf7;">
           <div class="flex-fill">
-            <div class="fw-medium" style="color:#374151;">{{ $pending->test_names ?: '-' }}</div>
-            <div class="text-muted" style="font-size:10px;">{{ $pending->noorder }} · {{ $pending->tgl_permintaan }}</div>
+            <div class="fw-semibold" style="color:#1e293b;">{{ $pending->test_names ?: '-' }}</div>
+            <div class="text-muted" style="font-size:11px;">{{ $pending->noorder }} · {{ $pending->tgl_permintaan }}</div>
           </div>
-          <a href="{{ url('/laboratorium/input/'.$pending->noorder) }}"
-             class="btn py-0 px-1 ms-1" style="font-size:10px;white-space:nowrap;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;">Input</a>
+          <span class="badge bg-warning-lt" style="font-size:9.5px;">Order</span>
         </div>
-        @endforeach
         @endif
         {{-- Completed Results --}}
         @if($lab_results->count() > 0)
-        <div style="background:#fef2f2;border-bottom:1px solid #fecaca;padding:3px 8px;">
-          <span style="font-size:10px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:.4px;">✅ Hasil</span>
+        @php $lab = $lab_results->first(); @endphp
+        <div style="background:#fef2f2;border-bottom:1px solid #fecaca;padding:4px 8px;">
+          <span style="font-size:10px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:.4px;">✅ Hasil Terakhir</span>
         </div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
           <tbody>
-            @foreach($lab_results as $lab)
             <tr>
-              <td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;color:#64748b;white-space:nowrap;">{{ $lab->tgl_periksa }}</td>
-              <td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-weight:500;">{{ $lab->item_name }}</td>
-              <td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;">
+              <td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;color:#64748b;white-space:nowrap;">{{ $lab->tgl_periksa }}</td>
+              <td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#1e293b;">{{ $lab->item_name }}</td>
+              <td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;text-align:right;">
                 <a href="{{ url('/laboratorium/view-hasil/'.urlencode($lab->no_rawat).'/'.urlencode($lab->tgl_periksa).'/'.urlencode($lab->jam)) }}"
-                   style="font-size:10px;color:#2563eb;">Lihat</a>
+                   style="font-size:11.5px;color:#2563eb;font-weight:600;">Lihat</a>
               </td>
             </tr>
-            @endforeach
           </tbody>
         </table>
         @endif
@@ -331,17 +340,18 @@
         <span class="badge bg-success-lt" style="font-size:10px;">{{ $rad_results->count() }}</span>
       </div>
       <div style="flex:1;overflow-y:auto;">
-        @forelse($rad_results as $rad)
-        <div class="px-2 py-1.5 border-bottom d-flex align-items-center" style="font-size:11px;">
+        @if($rad_results->isNotEmpty())
+        @php $rad = $rad_results->first(); @endphp
+        <div class="px-3 py-2 border-bottom d-flex align-items-center" style="font-size:12.5px;">
           <div style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-            <span class="text-muted me-2" style="font-size:10px;">{{ $rad->tgl_periksa }}</span>
-            <span class="fw-semibold text-dark">{{ $rad->item_name }}</span>
-            <span class="text-muted ms-2" style="font-size:10px;">({{ $rad->examiner }})</span>
+            <span class="text-muted me-2" style="font-size:11px;">{{ $rad->tgl_periksa }}</span>
+            <strong class="text-dark">{{ $rad->item_name }}</strong>
+            <span class="text-muted ms-2" style="font-size:11px;">({{ $rad->examiner }})</span>
           </div>
         </div>
-        @empty
+        @else
         <div class="p-3 text-center text-muted fst-italic" style="font-size:11px;">Belum ada data radiologi.</div>
-        @endforelse
+        @endif
       </div>
     </div>
 
