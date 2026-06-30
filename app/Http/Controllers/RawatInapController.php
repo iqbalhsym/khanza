@@ -33,7 +33,12 @@ class RawatInapController extends Controller
             );
 
         if ($kd_dokter) {
-            $query->where('reg_periksa.kd_dokter', $kd_dokter);
+            $query->where(function($q) use ($kd_dokter) {
+                $q->where('reg_periksa.kd_dokter', $kd_dokter)
+                  ->orWhereIn('reg_periksa.no_rawat', function($sub) use ($kd_dokter) {
+                      $sub->select('no_rawat')->from('reg_dpjp_tambahan')->where('kd_dokter', $kd_dokter);
+                  });
+            });
         }
 
         if ($request->has('search') && !empty($request->search)) {

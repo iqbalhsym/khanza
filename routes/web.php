@@ -31,14 +31,14 @@ Route::get('/logout', function() {
 
 Route::get('/captcha', [App\Http\Controllers\AuthController::class, 'generateCaptcha']);
 
-// Protected Internal Routes (Must be logged in via LDAP)
+// Protected Internal Routes (Must be logged in via LDAP/Lokal)
 Route::middleware('auth.session')->group(function () {
     
     // Dashboard
-    Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index']);
+    Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->middleware('role:dashboard');
 
     // Pendaftaran
-    Route::prefix('pendaftaran')->group(function () {
+    Route::prefix('pendaftaran')->middleware('role:pendaftaran')->group(function () {
         Route::get('/',            [App\Http\Controllers\PasienController::class, 'index']);
         Route::get('/pasien-baru', [App\Http\Controllers\PasienController::class, 'create']);
         Route::get('/pasien-lama', [App\Http\Controllers\PasienController::class, 'index']);
@@ -49,7 +49,7 @@ Route::middleware('auth.session')->group(function () {
     });
 
     // Rawat Jalan
-    Route::prefix('rawat-jalan')->group(function () {
+    Route::prefix('rawat-jalan')->middleware('role:rawat_jalan')->group(function () {
         Route::get('/', [App\Http\Controllers\RawatJalanController::class, 'index']);
         Route::get('/daftar', [App\Http\Controllers\RawatJalanController::class, 'create']);
         Route::post('/store', [App\Http\Controllers\RawatJalanController::class, 'store']);
@@ -69,27 +69,27 @@ Route::middleware('auth.session')->group(function () {
     });
 
     // Farmasi
-    Route::prefix('farmasi')->group(function () {
+    Route::prefix('farmasi')->middleware('role:farmasi')->group(function () {
         Route::get('/', [App\Http\Controllers\ResepController::class, 'index']);
         Route::get('/stok', [App\Http\Controllers\FarmasiController::class, 'stok']);
         Route::post('/dispense/{no_resep}', [App\Http\Controllers\ResepController::class, 'dispense']);
     });
 
     // Billing / Kasir
-    Route::prefix('billing')->group(function () {
+    Route::prefix('billing')->middleware('role:billing')->group(function () {
         Route::get('/', [App\Http\Controllers\BillingController::class, 'index']);
         Route::get('/show/{no_rawat}', [App\Http\Controllers\BillingController::class, 'show'])->where('no_rawat', '.*');
         Route::post('/pay', [App\Http\Controllers\BillingController::class, 'pay']);
     });
 
     // Rawat Inap
-    Route::prefix('rawat-inap')->group(function () {
+    Route::prefix('rawat-inap')->middleware('role:rawat_inap')->group(function () {
         Route::get('/', [App\Http\Controllers\RawatInapController::class, 'index']);
         Route::get('/kamar', [App\Http\Controllers\RawatInapController::class, 'kamar']);
     });
 
     // Laboratorium
-    Route::prefix('laboratorium')->group(function () {
+    Route::prefix('laboratorium')->middleware('role:laboratorium')->group(function () {
         Route::get('/',            [App\Http\Controllers\LaboratoriumController::class, 'index']);
         Route::get('/request/{no_rawat}', [App\Http\Controllers\LaboratoriumController::class, 'createRequest'])->where('no_rawat', '.*');
         Route::post('/request/store', [App\Http\Controllers\LaboratoriumController::class, 'storeRequest']);
@@ -99,7 +99,8 @@ Route::middleware('auth.session')->group(function () {
         Route::get('/view-hasil/{no_rawat}/{tgl}/{jam}', [App\Http\Controllers\LaboratoriumController::class, 'showResult'])->where('no_rawat', '.*');
     });
 
-    Route::prefix('radiologi')->group(function () {
+    // Radiologi
+    Route::prefix('radiologi')->middleware('role:radiologi')->group(function () {
         Route::get('/', [App\Http\Controllers\RadiologiController::class, 'index']);
         Route::get('/request/{no_rawat}', [App\Http\Controllers\RadiologiController::class, 'createRequest'])->where('no_rawat', '.*');
         Route::post('/request/store', [App\Http\Controllers\RadiologiController::class, 'storeRequest']);
@@ -110,7 +111,7 @@ Route::middleware('auth.session')->group(function () {
     });
 
     // Master Data
-    Route::prefix('master')->group(function () {
+    Route::prefix('master')->middleware('role:master_data')->group(function () {
         Route::get('/',        [App\Http\Controllers\MasterController::class, 'pasien']); // Default to pasien
         Route::get('/pasien',  [App\Http\Controllers\MasterController::class, 'pasien']);
         Route::get('/dokter',  [App\Http\Controllers\MasterController::class, 'dokter']);
@@ -122,11 +123,20 @@ Route::middleware('auth.session')->group(function () {
         Route::get('/aset',    [App\Http\Controllers\MasterController::class, 'aset']);
     });
 
-    Route::get('/laporan', fn() => view('laporan.index'));
-    Route::get('/pengaturan', fn() => view('dashboard.index'));
+    // Laporan
+    Route::get('/laporan', fn() => view('laporan.index'))->middleware('role:laporan');
+
+    // Pengaturan & RBAC
+    Route::middleware('role:pengaturan')->group(function () {
+        Route::get('/pengaturan', [App\Http\Controllers\PengaturanController::class, 'index']);
+        Route::post('/pengaturan/users', [App\Http\Controllers\PengaturanController::class, 'storeUser']);
+        Route::put('/pengaturan/users/{id}', [App\Http\Controllers\PengaturanController::class, 'updateUser']);
+        Route::delete('/pengaturan/users/{id}', [App\Http\Controllers\PengaturanController::class, 'destroyUser']);
+        Route::put('/pengaturan/roles/{id}', [App\Http\Controllers\PengaturanController::class, 'updateRolePermissions']);
+    });
 
     // Legacy Pasien route (kept for compatibility)
-    Route::get('/pasien',         [App\Http\Controllers\PasienController::class, 'index']);
-    Route::get('/pasien/create',  fn() => view('pendaftaran.pasien_baru'));
-    Route::post('/pasien/store',  [App\Http\Controllers\PasienController::class, 'store']);
+    Route::get('/pasien',         [App\Http\Controllers\PasienController::class, 'index'])->middleware('role:pendaftaran');
+    Route::get('/pasien/create',  fn() => view('pendaftaran.pasien_baru'))->middleware('role:pendaftaran');
+    Route::post('/pasien/store',  [App\Http\Controllers\PasienController::class, 'store'])->middleware('role:pendaftaran');
 });

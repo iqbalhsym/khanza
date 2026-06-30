@@ -14,6 +14,11 @@ class PemeriksaanController extends Controller
         // Decode no_rawat if it contains slashes (e.g. 2026/03/26/000001)
         $no_rawat = urldecode($no_rawat);
 
+        $kd_dokter = session('user')->kd_dokter ?? null;
+        if ($kd_dokter && !\App\Helpers\PermissionHelper::hasDoctorAccessToPatient($no_rawat, $kd_dokter)) {
+            return redirect('/rawat-jalan')->with('error', 'Anda tidak memiliki hak akses untuk memeriksa pasien ini.');
+        }
+
         $reg = DB::table('reg_periksa')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
             ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
@@ -57,6 +62,12 @@ class PemeriksaanController extends Controller
             'penilaian' => 'required',
             'rtl' => 'required',
         ]);
+
+        $no_rawat = $request->no_rawat;
+        $kd_dokter = session('user')->kd_dokter ?? null;
+        if ($kd_dokter && !\App\Helpers\PermissionHelper::hasDoctorAccessToPatient($no_rawat, $kd_dokter)) {
+            return redirect('/rawat-jalan')->with('error', 'Anda tidak memiliki hak akses untuk memeriksa pasien ini.');
+        }
 
         try {
             // Get the registration record to find the assigned doctor (kd_dokter)

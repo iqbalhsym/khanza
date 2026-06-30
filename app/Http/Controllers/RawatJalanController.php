@@ -25,7 +25,12 @@ class RawatJalanController extends Controller
             ->whereBetween('tgl_registrasi', [$tgl_dari, $tgl_sampai]);
             
         if ($kd_dokter) {
-            $statsQuery->where('kd_dokter', $kd_dokter);
+            $statsQuery->where(function($q) use ($kd_dokter) {
+                $q->where('kd_dokter', $kd_dokter)
+                  ->orWhereIn('no_rawat', function($sub) use ($kd_dokter) {
+                      $sub->select('no_rawat')->from('reg_dpjp_tambahan')->where('kd_dokter', $kd_dokter);
+                  });
+            });
         }
         
         $stats = $statsQuery->selectRaw("
@@ -46,7 +51,12 @@ class RawatJalanController extends Controller
             ->whereBetween('reg_periksa.tgl_registrasi', [$tgl_dari, $tgl_sampai]);
             
         if ($kd_dokter) {
-            $antrianQuery->where('reg_periksa.kd_dokter', $kd_dokter);
+            $antrianQuery->where(function($q) use ($kd_dokter) {
+                $q->where('reg_periksa.kd_dokter', $kd_dokter)
+                  ->orWhereIn('reg_periksa.no_rawat', function($sub) use ($kd_dokter) {
+                      $sub->select('no_rawat')->from('reg_dpjp_tambahan')->where('kd_dokter', $kd_dokter);
+                  });
+            });
         }
 
         $antrian = $antrianQuery->select(
@@ -186,6 +196,11 @@ class RawatJalanController extends Controller
     public function showRegisteredDetail($no_rawat)
     {
         $no_rawat = urldecode($no_rawat);
+
+        $kd_dokter = session('user')->kd_dokter ?? null;
+        if ($kd_dokter && !\App\Helpers\PermissionHelper::hasDoctorAccessToPatient($no_rawat, $kd_dokter)) {
+            return redirect('/rawat-jalan')->with('error', 'Anda tidak memiliki hak akses untuk melihat detail pasien ini.');
+        }
 
         // Fetch Main Registration Data (Tanpa join dokter)
         $data = \DB::table('reg_periksa')

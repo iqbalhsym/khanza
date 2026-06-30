@@ -16,18 +16,6 @@ public function loginForm()
 
     public function login(Request $request)
     {
-        // Mengecek apakah ekstensi LDAP sudah diinstal di server
-        if (!extension_loaded('ldap')) {
-            return back()->with('error', 'Ekstensi php-ldap belum terinstal di server. Silakan hubungi administrator.');
-        }
-
-        $ldap_host = config('ldap.host', '10.121.1.162');
-        $ldap_port = config('ldap.port', 389);
-        $ldap_domain = config('ldap.domain', 'domain-anda.local'); // Opsional, mungkin tidak dipakai di skenario 2
-        $ldap_base_dn = config('ldap.base_dn', '');
-        $ldap_admin = config('ldap.admin_user', '');
-        $ldap_admin_pass = config('ldap.admin_pass', '');
-        
         $username = $request->username;
         $password = $request->password;
 
@@ -43,83 +31,176 @@ public function loginForm()
         // Hapus session captcha setelah divalidasi agar tidak bisa di-reuse
         Session::forget('captcha_answer');
 
-        try {
-            // Melatih koneksi LDAP menggunakan format URI (mengatasi deprecated warning di PHP 8.3)
-            $ldap_conn = ldap_connect("ldap://{$ldap_host}:{$ldap_port}");
-            
-            if (!$ldap_conn) {
-                return back()->with('error', 'Gagal terhubung ke server LDAP/AD.');
+        $ldap_success = false;
+        $ldap_user_data = [];
+
+        // 1. Cobalah menggunakan LDAP jika ekstensi terinstal
+        if (extension_loaded('ldap')) {
+            $ldap_host = config('ldap.host', '10.121.1.162');
+            $ldap_port = config('ldap.port', 389);
+            $ldap_base_dn = config('ldap.base_dn', '');
+            $ldap_admin = config('ldap.admin_user', '');
+            $ldap_admin_pass = config('ldap.admin_pass', '');
+
+            try {
+                $ldap_conn = @ldap_connect("ldap://{$ldap_host}:{$ldap_port}");
+                if ($ldap_conn) {
+                    ldap_set_option($ldap_conn, LDAP_OPT_PROTOCOL_VERSION, 3);
+                    ldap_set_option($ldap_conn, LDAP_OPT_REFERRALS, 0);
+
+                    // Bind admin/service account
+                    $admin_bind = @ldap_bind($ldap_conn, $ldap_admin, $ldap_admin_pass);
+                    if ($admin_bind) {
+                        // Cari user
+                        $search_filter = "(|(sAMAccountName={$username})(userPrincipalName={$username}))";
+                        $search = @ldap_search($ldap_conn, $ldap_base_dn, $search_filter);
+                        if ($search) {
+                            $entries = ldap_get_entries($ldap_conn, $search);
+                            if ($entries['count'] > 0) {
+                                $user_dn = $entries[0]['dn'];
+                                // Bind user password
+                                $user_bind = @ldap_bind($ldap_conn, $user_dn, $password);
+                                if ($user_bind) {
+                                    $ldap_success = true;
+                                    $ldap_user_data = [
+                                        'username' => $username,
+                                        'displayname' => $entries[0]['displayname'][0] ?? $username,
+                                        'mail' => $entries[0]['mail'][0] ?? null,
+                                        'office' => $entries[0]['physicaldeliveryofficename'][0] ?? null,
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                // Biarkan lanjut ke fallback database lokal jika koneksi LDAP error/timeout
+            }
+        }
+
+        // 2. Jika LDAP berhasil, lakukan pencarian/pendaftaran lokal
+        if ($ldap_success) {
+            $dbUser = \App\Models\User::with('role')->where('username', $username)->first();
+
+            $ad_office = $ldap_user_data['office'] ?? null;
+            $doctor = null;
+
+            // Cari dokter dari AD Office (physicalDeliveryOfficeName) terlebih dahulu
+            if (!empty($ad_office)) {
+                $doctor = DB::connection('dokter')->table('dokter')
+                    ->where('kd_dokter', $ad_office)
+                    ->first();
             }
 
-            // Setting opsi LDAP AD standar
-            ldap_set_option($ldap_conn, LDAP_OPT_PROTOCOL_VERSION, 3);
-            ldap_set_option($ldap_conn, LDAP_OPT_REFERRALS, 0);
-
-            // TAHAP 1: BIND SEBAGAI ADMINISTRATOR / SERVICE ACCOUNT
-            $admin_bind = @ldap_bind($ldap_conn, $ldap_admin, $ldap_admin_pass);
-
-            if (!$admin_bind) {
-                return back()->with('error', 'Gagal konfigurasi LDAP: Koneksi Service Account ditolak. Periksa kredensial Admin LDAP di file .env');
-            }
-
-            // TAHAP 2: PENCARIAN USERNAME (sAMAccountName atau userPrincipalName)
-            $search_filter = "(|(sAMAccountName={$username})(userPrincipalName={$username}))";
-            $search = @ldap_search($ldap_conn, $ldap_base_dn, $search_filter);
-            
-            if (!$search) {
-                return back()->with('error', 'Pencarian LDAP gagal: Base DN mungkin salah. Periksa file .env');
-            }
-
-            $entries = ldap_get_entries($ldap_conn, $search);
-
-            if ($entries['count'] == 0) {
-                 return back()->with('error', 'Akun tidak ditemukan di direktori Active Directory.');
-            }
-
-            // Mendapatkan Full Distinguished Name (DN) milik user yang login
-            $user_dn = $entries[0]['dn'];
-
-            // TAHAP 3: BIND SEBAGAI USER (Verifikasi Password User)
-            $user_bind = @ldap_bind($ldap_conn, $user_dn, $password);
-
-            if ($user_bind) {
-                // Login LDAP Berhasil! 
-                // Karena kita tidak menggunakan DB lokal (sik.sql), kita langsung membuat object user mock
-                // Mock user object disimpan di session agar sesuai dengan kebutuhan aplikasi (Dashboard dll)
-                $user = new \stdClass();
-                $user->usere = $username;
-                
-                // Coba ambil nama asli dari AD jika tersedia, jika tidak pakai username
-                $user->nama = isset($entries[0]['displayname'][0]) ? $entries[0]['displayname'][0] : $username; 
-                
-                // Cari data dokter di database terpisah 'dokter'
-                // Opsi A: Cari berdasarkan kd_dokter yang sama dengan username AD
+            // Fallback cari dokter berdasarkan username (Kode Dokter)
+            if (!$doctor) {
                 $doctor = DB::connection('dokter')->table('dokter')
                     ->where('kd_dokter', $username)
                     ->first();
-
-                // Opsi B (Fallback): Cari berdasarkan email jika atribut email tersedia di AD
-                if (!$doctor && isset($entries[0]['mail'][0])) {
-                    $ad_email = $entries[0]['mail'][0];
-                    $doctor = DB::connection('dokter')->table('dokter')
-                        ->where('email', $ad_email)
-                        ->first();
-                }
-
-                if ($doctor) {
-                    $user->kd_dokter = $doctor->kd_dokter;
-                    $user->nama = $doctor->nm_dokter; // Gunakan nama resmi dokter dari database
-                } else {
-                    $user->kd_dokter = null; // Admin atau staf non-dokter
-                }
-
-                Session::put('user', $user);
-                return redirect('/dashboard');
-            } else {
-                return back()->with('error', 'Password Anda salah. Silakan coba lagi.');
             }
-        } catch (\Exception $e) {
-            return back()->with('error', 'Terjadi kesalahan sistem saat menghubungi LDAP: ' . $e->getMessage());
+
+            // Fallback cari dokter berdasarkan email
+            if (!$doctor && !empty($ldap_user_data['mail'])) {
+                $doctor = DB::connection('dokter')->table('dokter')
+                    ->where('email', $ldap_user_data['mail'])
+                    ->first();
+            }
+
+            $kd_dokter = $doctor ? $doctor->kd_dokter : null;
+            $roleName = $doctor ? 'Dokter' : 'Staf';
+
+            // Auto-Register jika belum ada di database lokal
+            if (!$dbUser) {
+                $role = \App\Models\Role::where('name', $roleName)->first();
+                if (!$role) {
+                    $role = \App\Models\Role::where('name', 'Staf')->first();
+                }
+
+                $dbUser = \App\Models\User::create([
+                    'name' => $doctor ? $doctor->nm_dokter : $ldap_user_data['displayname'],
+                    'username' => $username,
+                    'email' => $ldap_user_data['mail'],
+                    'role_id' => $role ? $role->id : null,
+                    'kd_dokter' => $kd_dokter,
+                    'is_active' => true,
+                ]);
+            } else {
+                // Sinkronisasi data dari AD ke lokal jika sudah ada perubahan di AD
+                $updated = false;
+
+                if ($doctor && $dbUser->kd_dokter !== $doctor->kd_dokter) {
+                    $dbUser->kd_dokter = $doctor->kd_dokter;
+                    
+                    // Update ke role Dokter jika saat ini bukan Super Admin
+                    if (!$dbUser->role || $dbUser->role->name !== 'Super Admin') {
+                        $role = \App\Models\Role::where('name', 'Dokter')->first();
+                        if ($role) {
+                            $dbUser->role_id = $role->id;
+                        }
+                    }
+                    $updated = true;
+                }
+
+                if ($dbUser->name !== ($doctor ? $doctor->nm_dokter : $ldap_user_data['displayname'])) {
+                    $dbUser->name = $doctor ? $doctor->nm_dokter : $ldap_user_data['displayname'];
+                    $updated = true;
+                }
+
+                if (!empty($ldap_user_data['mail']) && $dbUser->email !== $ldap_user_data['mail']) {
+                    $dbUser->email = $ldap_user_data['mail'];
+                    $updated = true;
+                }
+
+                if ($updated) {
+                    $dbUser->save();
+                }
+            }
+            
+            $dbUser->load('role');
+
+            if (!$dbUser->is_active) {
+                return back()->with('error', 'Akun Anda dinonaktifkan. Silakan hubungi administrator.');
+            }
+
+            // Simpan session
+            $user = new \stdClass();
+            $user->id = $dbUser->id;
+            $user->usere = $dbUser->username;
+            $user->nama = $dbUser->name;
+            $user->kd_dokter = $dbUser->kd_dokter;
+            $user->role_id = $dbUser->role_id;
+            $user->role_name = $dbUser->role ? $dbUser->role->name : 'Staf';
+            $user->permissions = $dbUser->role ? $dbUser->role->permissions : ['dashboard'];
+
+            Session::put('user', $user);
+            return redirect('/dashboard');
+        }
+
+        // 3. Fallback: Authenticate via Local Database
+        $dbUser = \App\Models\User::with('role')->where('username', $username)->first();
+        if ($dbUser && \Illuminate\Support\Facades\Hash::check($password, $dbUser->password)) {
+            if (!$dbUser->is_active) {
+                return back()->with('error', 'Akun Anda dinonaktifkan. Silakan hubungi administrator.');
+            }
+
+            $user = new \stdClass();
+            $user->id = $dbUser->id;
+            $user->usere = $dbUser->username;
+            $user->nama = $dbUser->name;
+            $user->kd_dokter = $dbUser->kd_dokter;
+            $user->role_id = $dbUser->role_id;
+            $user->role_name = $dbUser->role ? $dbUser->role->name : 'Staf';
+            $user->permissions = $dbUser->role ? $dbUser->role->permissions : ['dashboard'];
+
+            Session::put('user', $user);
+            return redirect('/dashboard');
+        }
+
+        // Jika semua metode gagal
+        if (extension_loaded('ldap')) {
+            return back()->with('error', 'Login gagal. Silakan periksa username dan password Anda (LDAP/Lokal).');
+        } else {
+            return back()->with('error', 'Ekstensi php-ldap tidak terpasang & autentikasi lokal gagal. Periksa kembali username/password.');
         }
     }
 

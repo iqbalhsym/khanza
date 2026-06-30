@@ -53,6 +53,11 @@ class ResepController extends Controller
     public function create($no_rawat)
     {
         $no_rawat = urldecode($no_rawat);
+
+        $kd_dokter = session('user')->kd_dokter ?? null;
+        if ($kd_dokter && !\App\Helpers\PermissionHelper::hasDoctorAccessToPatient($no_rawat, $kd_dokter)) {
+            return redirect('/rawat-jalan')->with('error', 'Anda tidak memiliki hak akses untuk meresepkan obat untuk pasien ini.');
+        }
         $reg = DB::table('reg_periksa')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
             ->where('no_rawat', $no_rawat)
@@ -80,6 +85,12 @@ class ResepController extends Controller
             'jumlah' => 'required|array',
             'aturan' => 'required|array',
         ]);
+
+        $no_rawat = $request->no_rawat;
+        $kd_dokter = session('user')->kd_dokter ?? null;
+        if ($kd_dokter && !\App\Helpers\PermissionHelper::hasDoctorAccessToPatient($no_rawat, $kd_dokter)) {
+            return redirect('/rawat-jalan')->with('error', 'Anda tidak memiliki hak akses untuk meresepkan obat untuk pasien ini.');
+        }
 
         try {
             DB::beginTransaction();

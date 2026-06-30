@@ -23,8 +23,18 @@ class DashboardController extends Controller
         $yesterdayTotalQuery = DB::table('reg_periksa')->where('tgl_registrasi', $yesterday);
         
         if ($kd_dokter) {
-            $totalPasienQuery->where('kd_dokter', $kd_dokter);
-            $yesterdayTotalQuery->where('kd_dokter', $kd_dokter);
+            $totalPasienQuery->where(function($q) use ($kd_dokter) {
+                $q->where('kd_dokter', $kd_dokter)
+                  ->orWhereIn('no_rawat', function($sub) use ($kd_dokter) {
+                      $sub->select('no_rawat')->from('reg_dpjp_tambahan')->where('kd_dokter', $kd_dokter);
+                  });
+            });
+            $yesterdayTotalQuery->where(function($q) use ($kd_dokter) {
+                $q->where('kd_dokter', $kd_dokter)
+                  ->orWhereIn('no_rawat', function($sub) use ($kd_dokter) {
+                      $sub->select('no_rawat')->from('reg_dpjp_tambahan')->where('kd_dokter', $kd_dokter);
+                  });
+            });
         }
         
         $stats['total_pasien'] = $totalPasienQuery->count();
@@ -40,8 +50,18 @@ class DashboardController extends Controller
             ->where('status_lanjut', 'Ralan');
             
         if ($kd_dokter) {
-            $ralanQuery->where('kd_dokter', $kd_dokter);
-            $yesterdayRalanQuery->where('kd_dokter', $kd_dokter);
+            $ralanQuery->where(function($q) use ($kd_dokter) {
+                $q->where('kd_dokter', $kd_dokter)
+                  ->orWhereIn('no_rawat', function($sub) use ($kd_dokter) {
+                      $sub->select('no_rawat')->from('reg_dpjp_tambahan')->where('kd_dokter', $kd_dokter);
+                  });
+            });
+            $yesterdayRalanQuery->where(function($q) use ($kd_dokter) {
+                $q->where('kd_dokter', $kd_dokter)
+                  ->orWhereIn('no_rawat', function($sub) use ($kd_dokter) {
+                      $sub->select('no_rawat')->from('reg_dpjp_tambahan')->where('kd_dokter', $kd_dokter);
+                  });
+            });
         }
         
         $stats['ralan'] = $ralanQuery->count();
@@ -58,8 +78,18 @@ class DashboardController extends Controller
             ->where('kamar_inap.tgl_masuk', $today);
             
         if ($kd_dokter) {
-            $ranapQuery->where('reg_periksa.kd_dokter', $kd_dokter);
-            $ranapNewQuery->where('reg_periksa.kd_dokter', $kd_dokter);
+            $ranapQuery->where(function($q) use ($kd_dokter) {
+                $q->where('reg_periksa.kd_dokter', $kd_dokter)
+                  ->orWhereIn('reg_periksa.no_rawat', function($sub) use ($kd_dokter) {
+                      $sub->select('no_rawat')->from('reg_dpjp_tambahan')->where('kd_dokter', $kd_dokter);
+                  });
+            });
+            $ranapNewQuery->where(function($q) use ($kd_dokter) {
+                $q->where('reg_periksa.kd_dokter', $kd_dokter)
+                  ->orWhereIn('reg_periksa.no_rawat', function($sub) use ($kd_dokter) {
+                      $sub->select('no_rawat')->from('reg_dpjp_tambahan')->where('kd_dokter', $kd_dokter);
+                  });
+            });
         }
         
         $stats['ranap'] = $ranapQuery->count();
@@ -76,8 +106,18 @@ class DashboardController extends Controller
         $yesterdayFarmasiQuery = DB::table('resep_obat')->where('tgl_perawatan', $yesterday);
         
         if ($kd_dokter) {
-            $farmasiQuery->where('kd_dokter', $kd_dokter);
-            $yesterdayFarmasiQuery->where('kd_dokter', $kd_dokter);
+            $farmasiQuery->where(function($q) use ($kd_dokter) {
+                $q->where('kd_dokter', $kd_dokter)
+                  ->orWhereIn('no_rawat', function($sub) use ($kd_dokter) {
+                      $sub->select('no_rawat')->from('reg_dpjp_tambahan')->where('kd_dokter', $kd_dokter);
+                  });
+            });
+            $yesterdayFarmasiQuery->where(function($q) use ($kd_dokter) {
+                $q->where('kd_dokter', $kd_dokter)
+                  ->orWhereIn('no_rawat', function($sub) use ($kd_dokter) {
+                      $sub->select('no_rawat')->from('reg_dpjp_tambahan')->where('kd_dokter', $kd_dokter);
+                  });
+            });
         }
         
         $stats['farmasi'] = $farmasiQuery->count();
@@ -105,7 +145,12 @@ class DashboardController extends Controller
             );
             
         if ($kd_dokter) {
-            $activitiesQuery->where('kd_dokter', $kd_dokter);
+            $activitiesQuery->where(function($q) use ($kd_dokter) {
+                $q->where('kd_dokter', $kd_dokter)
+                  ->orWhereIn('no_rawat', function($sub) use ($kd_dokter) {
+                      $sub->select('no_rawat')->from('reg_dpjp_tambahan')->where('kd_dokter', $kd_dokter);
+                  });
+            });
         }
         
         $recent_activities = $activitiesQuery->orderBy('tgl_registrasi', 'desc')

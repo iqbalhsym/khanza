@@ -49,6 +49,7 @@
             </a>
           </li>
 
+          @if(\App\Helpers\PermissionHelper::has('pendaftaran'))
           <!-- Pendaftaran -->
           <li class="nav-item dropdown">
             <a href="#" class="nav-link dropdown-toggle @if(request()->is('pendaftaran*')) active @endif"
@@ -71,7 +72,9 @@
               </a></li>
             </ul>
           </li>
+          @endif
 
+          @if(\App\Helpers\PermissionHelper::has('rawat_jalan'))
           <!-- Rawat Jalan -->
           <li class="nav-item dropdown">
             <a href="#" class="nav-link dropdown-toggle @if(request()->is('rawat-jalan*')) active @endif"
@@ -90,7 +93,9 @@
               </a></li>
             </ul>
           </li>
+          @endif
 
+          @if(\App\Helpers\PermissionHelper::has('rawat_inap'))
           <!-- Rawat Inap -->
           <li class="nav-item dropdown">
             <a href="#" class="nav-link dropdown-toggle @if(request()->is('rawat-inap*')) active @endif"
@@ -109,8 +114,9 @@
               </a></li>
             </ul>
           </li>
+          @endif
 
-          {{-- HIDE LABORATUROM, RADIOLOGI, FARMASI, BILLING MENUS
+          @if(\App\Helpers\PermissionHelper::has('laboratorium'))
           <!-- Laboratorium -->
           <li class="nav-item dropdown">
             <a href="#" class="nav-link dropdown-toggle @if(request()->is('laboratorium*')) active @endif"
@@ -129,7 +135,9 @@
               </a></li>
             </ul>
           </li>
+          @endif
 
+          @if(\App\Helpers\PermissionHelper::has('radiologi'))
           <!-- Radiologi -->
           <li class="nav-item dropdown">
             <a href="#" class="nav-link dropdown-toggle @if(request()->is('radiologi*')) active @endif"
@@ -144,7 +152,9 @@
               </a></li>
             </ul>
           </li>
+          @endif
 
+          @if(\App\Helpers\PermissionHelper::has('farmasi'))
           <!-- Farmasi -->
           <li class="nav-item dropdown">
             <a href="#" class="nav-link dropdown-toggle @if(request()->is('farmasi*')) active @endif"
@@ -163,7 +173,9 @@
               </a></li>
             </ul>
           </li>
+          @endif
 
+          @if(\App\Helpers\PermissionHelper::has('billing'))
           <!-- Billing -->
           <li class="nav-item">
             <a href="{{ url('/billing') }}" class="nav-link @if(request()->is('billing*')) active @endif"
@@ -171,8 +183,9 @@
               Billing
             </a>
           </li>
-          --}}
+          @endif
 
+          @if(\App\Helpers\PermissionHelper::has('master_data'))
           <!-- Master Data -->
           <li class="nav-item dropdown">
             <a href="#" class="nav-link dropdown-toggle @if(request()->is('master*')) active @endif"
@@ -211,6 +224,17 @@
               </a></li>
             </ul>
           </li>
+          @endif
+
+          @if(\App\Helpers\PermissionHelper::has('laporan'))
+          <!-- Laporan -->
+          <li class="nav-item">
+            <a href="{{ url('/laporan') }}" class="nav-link @if(request()->is('laporan*')) active fw-bold @endif"
+               style="color: rgba(255,255,255,0.85); font-size: 13px; padding: 6px 10px; border-radius: 6px; @if(request()->is('laporan*')) background: rgba(255,255,255,0.2); color:#fff; @endif">
+              Laporan
+            </a>
+          </li>
+          @endif
 
         </ul>
 
@@ -237,6 +261,12 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="margin-top: 8px;">
               <li><h6 class="dropdown-header">{{ session('user')->usere ?? 'Super Admin' }}</h6></li>
+              @if(\App\Helpers\PermissionHelper::has('pengaturan'))
+              <li><a class="dropdown-item" href="{{ url('/pengaturan') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted me-2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Pengaturan Sistem
+              </a></li>
+              @endif
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item text-danger" href="{{ url('/logout') }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
