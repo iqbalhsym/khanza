@@ -36,6 +36,10 @@ class RoleAndUserSeeder extends Seeder
                 'permissions' => $allPermissions,
             ],
             [
+                'name' => 'Administrator',
+                'permissions' => ['dashboard', 'pendaftaran', 'rawat_jalan', 'rawat_inap', 'laboratorium', 'radiologi', 'farmasi', 'billing', 'master_data', 'laporan'],
+            ],
+            [
                 'name' => 'Dokter',
                 'permissions' => ['dashboard', 'rawat_jalan', 'rawat_inap'],
             ],

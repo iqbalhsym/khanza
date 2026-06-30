@@ -39,10 +39,21 @@ class PermissionHelper
      * @param string|null $kd_dokter
      * @return bool
      */
-    public static function hasDoctorAccessToPatient(string $no_rawat, ?string $kd_dokter): bool
+    public static function hasDoctorAccessToPatient(string $no_rawat, ?string $kd_dokter = null): bool
     {
-        if (!$kd_dokter) {
-            return true; // Non-doctors (Admins, Nurses, etc.) have global access
+        $user = session('user');
+        if (!$user) {
+            return false;
+        }
+
+        // Non-dokter (Super Admin, Administrator, Perawat, dll.) dilewati tanpa filter
+        if (isset($user->role_name) && $user->role_name !== 'Dokter') {
+            return true;
+        }
+
+        $kd_dokter = $user->kd_dokter ?? null;
+        if (empty($kd_dokter)) {
+            return false; // Dokter tetapi tidak ditautkan ke data dokter mana pun
         }
 
         return \Illuminate\Support\Facades\DB::table('reg_periksa')

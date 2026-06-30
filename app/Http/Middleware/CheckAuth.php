@@ -22,6 +22,28 @@ class CheckAuth
             return redirect('/login')->with('error', 'Sesi Anda telah berakhir. Silakan login terlebih dahulu untuk mengakses sistem.');
         }
 
+        // AUTO-REFRESH: Mengambil status terbaru dari database secara real-time
+        $sessionUser = Session::get('user');
+        if ($sessionUser && isset($sessionUser->id)) {
+            $dbUser = \App\Models\User::with('role')->find($sessionUser->id);
+            if ($dbUser) {
+                // Jika dinonaktifkan oleh admin, paksa keluar seketika
+                if (!$dbUser->is_active) {
+                    Session::forget('user');
+                    return redirect('/login')->with('error', 'Akun Anda telah dinonaktifkan oleh administrator.');
+                }
+
+                // Perbarui hak akses, nama, dan role secara instan tanpa perlu relogin
+                $sessionUser->nama = $dbUser->name;
+                $sessionUser->kd_dokter = $dbUser->kd_dokter;
+                $sessionUser->role_id = $dbUser->role_id;
+                $sessionUser->role_name = $dbUser->role ? $dbUser->role->name : 'Staf';
+                $sessionUser->permissions = $dbUser->role ? $dbUser->role->permissions : ['dashboard'];
+
+                Session::put('user', $sessionUser);
+            }
+        }
+
         // Jika ada session, izinkan untuk mengakses route dan cegah caching browser
         $response = $next($request);
 

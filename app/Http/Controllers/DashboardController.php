@@ -16,13 +16,15 @@ class DashboardController extends Controller
         $today = Carbon::today()->toDateString();
         $yesterday = Carbon::yesterday()->toDateString();
         
-        $kd_dokter = session('user')->kd_dokter ?? null;
+        $user = session('user');
+        $isDokter = ($user && isset($user->role_name) && $user->role_name === 'Dokter');
+        $kd_dokter = $user->kd_dokter ?? '';
 
         // 1. Total Pasien Hari Ini
         $totalPasienQuery = DB::table('reg_periksa')->where('tgl_registrasi', $today);
         $yesterdayTotalQuery = DB::table('reg_periksa')->where('tgl_registrasi', $yesterday);
         
-        if ($kd_dokter) {
+        if ($isDokter) {
             $totalPasienQuery->where(function($q) use ($kd_dokter) {
                 $q->where('kd_dokter', $kd_dokter)
                   ->orWhereIn('no_rawat', function($sub) use ($kd_dokter) {
@@ -49,7 +51,7 @@ class DashboardController extends Controller
             ->where('tgl_registrasi', $yesterday)
             ->where('status_lanjut', 'Ralan');
             
-        if ($kd_dokter) {
+        if ($isDokter) {
             $ralanQuery->where(function($q) use ($kd_dokter) {
                 $q->where('kd_dokter', $kd_dokter)
                   ->orWhereIn('no_rawat', function($sub) use ($kd_dokter) {
@@ -77,7 +79,7 @@ class DashboardController extends Controller
             ->join('reg_periksa', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
             ->where('kamar_inap.tgl_masuk', $today);
             
-        if ($kd_dokter) {
+        if ($isDokter) {
             $ranapQuery->where(function($q) use ($kd_dokter) {
                 $q->where('reg_periksa.kd_dokter', $kd_dokter)
                   ->orWhereIn('reg_periksa.no_rawat', function($sub) use ($kd_dokter) {
@@ -105,7 +107,7 @@ class DashboardController extends Controller
         $farmasiQuery = DB::table('resep_obat')->where('tgl_perawatan', $today);
         $yesterdayFarmasiQuery = DB::table('resep_obat')->where('tgl_perawatan', $yesterday);
         
-        if ($kd_dokter) {
+        if ($isDokter) {
             $farmasiQuery->where(function($q) use ($kd_dokter) {
                 $q->where('kd_dokter', $kd_dokter)
                   ->orWhereIn('no_rawat', function($sub) use ($kd_dokter) {
@@ -144,7 +146,7 @@ class DashboardController extends Controller
                 'kd_poli'
             );
             
-        if ($kd_dokter) {
+        if ($isDokter) {
             $activitiesQuery->where(function($q) use ($kd_dokter) {
                 $q->where('kd_dokter', $kd_dokter)
                   ->orWhereIn('no_rawat', function($sub) use ($kd_dokter) {

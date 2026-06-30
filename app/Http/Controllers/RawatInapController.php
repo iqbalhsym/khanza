@@ -12,7 +12,9 @@ class RawatInapController extends Controller
      */
     public function index(Request $request)
     {
-        $kd_dokter = session('user')->kd_dokter ?? null;
+        $user = session('user');
+        $isDokter = ($user && isset($user->role_name) && $user->role_name === 'Dokter');
+        $kd_dokter = $user->kd_dokter ?? '';
 
         $query = DB::table('kamar_inap')
             ->join('reg_periksa', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
@@ -32,7 +34,7 @@ class RawatInapController extends Controller
                 'reg_periksa.hubunganpj'
             );
 
-        if ($kd_dokter) {
+        if ($isDokter) {
             $query->where(function($q) use ($kd_dokter) {
                 $q->where('reg_periksa.kd_dokter', $kd_dokter)
                   ->orWhereIn('reg_periksa.no_rawat', function($sub) use ($kd_dokter) {

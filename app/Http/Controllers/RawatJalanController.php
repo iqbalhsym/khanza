@@ -13,7 +13,9 @@ class RawatJalanController extends Controller
         $tgl_sampai  = $request->query('tgl_sampai',  date('Y-m-d'));
         $perPage     = $request->query('per_page', 20);
         
-        $kd_dokter = session('user')->kd_dokter ?? null;
+        $user = session('user');
+        $isDokter = ($user && isset($user->role_name) && $user->role_name === 'Dokter');
+        $kd_dokter = $user->kd_dokter ?? '';
 
         // Pastikan tgl_dari tidak lebih dari tgl_sampai
         if ($tgl_dari > $tgl_sampai) {
@@ -24,7 +26,7 @@ class RawatJalanController extends Controller
         $statsQuery = \DB::table('reg_periksa')
             ->whereBetween('tgl_registrasi', [$tgl_dari, $tgl_sampai]);
             
-        if ($kd_dokter) {
+        if ($isDokter) {
             $statsQuery->where(function($q) use ($kd_dokter) {
                 $q->where('kd_dokter', $kd_dokter)
                   ->orWhereIn('no_rawat', function($sub) use ($kd_dokter) {
@@ -46,11 +48,11 @@ class RawatJalanController extends Controller
 
         $antrianQuery = \DB::table('reg_periksa')
             ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
-            ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
-            ->join('penjab', 'reg_periksa.kd_pj', '=', 'penjab.kd_pj')
+            ->leftJoin('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
+            ->leftJoin('penjab', 'reg_periksa.kd_pj', '=', 'penjab.kd_pj')
             ->whereBetween('reg_periksa.tgl_registrasi', [$tgl_dari, $tgl_sampai]);
             
-        if ($kd_dokter) {
+        if ($isDokter) {
             $antrianQuery->where(function($q) use ($kd_dokter) {
                 $q->where('reg_periksa.kd_dokter', $kd_dokter)
                   ->orWhereIn('reg_periksa.no_rawat', function($sub) use ($kd_dokter) {
