@@ -197,7 +197,7 @@
                           </div>
                           <div class="col-md-6 mb-3">
                             <label class="form-label">Dokter Terkait</label>
-                            <select class="form-select font-monospace" name="kd_dokter">
+                            <select class="form-select select-dokter font-monospace" name="kd_dokter">
                               <option value="">-- Tidak Terkait --</option>
                               @foreach($dokters as $doc)
                                 <option value="{{ $doc->kd_dokter }}" {{ $user->kd_dokter == $doc->kd_dokter ? 'selected' : '' }}>
@@ -380,7 +380,7 @@
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">Dokter Terkait</label>
-              <select class="form-select font-monospace" name="kd_dokter">
+              <select class="form-select select-dokter font-monospace" name="kd_dokter">
                 <option value="" selected>-- Tidak Terkait --</option>
                 @foreach($dokters as $doc)
                   <option value="{{ $doc->kd_dokter }}" {{ old('kd_dokter') == $doc->kd_dokter ? 'selected' : '' }}>
@@ -411,5 +411,60 @@
     </div>
   </div>
 </div>
+
+@push('styles')
+<!-- Tom Select CSS -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<style>
+  .ts-wrapper.form-select {
+    padding: 0 !important;
+    border: none !important;
+    background: none !important;
+  }
+  .ts-control {
+    border-radius: 4px !important;
+    padding: 8px 12px !important;
+    border: 1px solid #ced4da !important;
+    font-family: var(--tblr-font-monospace, monospace);
+  }
+  .ts-dropdown {
+    font-family: var(--tblr-font-monospace, monospace);
+  }
+</style>
+@endpush
+
+@push('scripts')
+<!-- Tom Select JS -->
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Fungsi inisialisasi Tom Select pada select-dokter di modal tertentu
+    function initTomSelectInModal(modal) {
+        modal.querySelectorAll('.select-dokter').forEach(function (select) {
+            if (!select.tomselect) {
+                new TomSelect(select, {
+                    create: false,
+                    placeholder: "Ketik nama / ID dokter...",
+                    maxOptions: 1000, // Batasan maksimum render opsi agar responsif
+                    searchField: ['text', 'value'],
+                    sortField: {
+                        field: "text",
+                        direction: "asc"
+                    }
+                });
+            }
+        });
+    }
+
+    // Inisialisasi saat modal ditampilkan (shown.bs.modal)
+    // Menghindari bug dimensi lebar 0-width saat modal masih tersembunyi
+    document.querySelectorAll('.modal').forEach(function (modal) {
+        modal.addEventListener('shown.bs.modal', function () {
+            initTomSelectInModal(modal);
+        });
+    });
+});
+</script>
+@endpush
 
 @endsection
