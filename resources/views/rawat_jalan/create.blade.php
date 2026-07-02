@@ -722,6 +722,12 @@
       alert('Silakan pilih pasien terlebih dahulu.');
     }
   });
+
+  // ── Auto-select patient from query parameters if exists ──────────────────
+  @if(isset($selectedPasien) && $selectedPasien)
+  const preselected = @json($selectedPasien);
+  selectPatient(preselected);
+  @endif
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>

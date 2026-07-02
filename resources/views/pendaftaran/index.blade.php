@@ -95,16 +95,16 @@
 </div>
 
 <!-- Table -->
-<div class="card">
-  <div class="card-header">
-    <h3>Daftar Antrian Hari Ini — <span id="liveDate" style="font-weight:400;color:var(--text-muted);"></span></h3>
-    <button class="btn btn-ghost btn-sm">
+<div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
+  <div class="card-header border-bottom bg-white d-flex align-items-center justify-content-between py-3">
+    <h3 class="card-title fw-bold text-dark m-0">Daftar Antrian Hari Ini — <span id="liveDate" class="fw-normal text-muted"></span></h3>
+    <button class="btn btn-ghost-secondary btn-sm d-flex align-items-center gap-1" onclick="window.location.reload()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
       Refresh
     </button>
   </div>
-  <div class="table-wrapper" style="overflow-x: auto;">
-    <table style="white-space: nowrap; min-width: max-content;">
+  <div class="table-responsive" style="overflow-x: auto; width: 100%; -webkit-overflow-scrolling: touch;">
+    <table class="table table-vcenter card-table table-hover mb-0" style="white-space: nowrap; min-width: 2500px;">
       <thead>
         <tr>
           <th width="40"><input type="checkbox" id="selectAll"></th>
@@ -145,7 +145,7 @@
           <th>Bahasa</th>
           <th>Cacat Fisik</th>
           <th>Tgl. Daftar</th>
-          <th width="80" class="text-center sticky-right" style="position: sticky; right: 0; background: var(--surface); z-index: 10; border-left: 1px solid var(--border);">Aksi</th>
+          <th width="80" class="text-center sticky-right" style="position: sticky; right: 0; background: #f8fafc; z-index: 10; border-left: 1px solid var(--border);">Aksi</th>
         </tr>
       </thead>
       <tbody>
@@ -202,8 +202,14 @@
           <td>{{ $p->bahasa_pasien }}</td>
           <td>{{ $p->cacat_fisik }}</td>
           <td class="text-sm text-muted">{{ $p->tgl_daftar }}</td>
-          <td class="text-center sticky-right" style="position: sticky; right: 0; background: inherit; border-left: 1px solid var(--border);">
+          <td class="text-center sticky-right" style="position: sticky; right: 0; background: #ffffff; border-left: 1px solid var(--border);">
             <div class="btn-group" style="justify-content:center;">
+              <a href="{{ url('/rawat-jalan/daftar?no_rkm_medis=' . $p->no_rkm_medis) }}" class="btn btn-ghost btn-icon btn-sm text-primary" title="Daftar Berobat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                  <line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+                </svg>
+              </a>
               <a href="{{ url('/pendaftaran/edit/'.$p->no_rkm_medis) }}" class="btn btn-ghost btn-icon btn-sm" title="Edit">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               </a>

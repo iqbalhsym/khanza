@@ -149,48 +149,64 @@
           {{-- Review & Entry --}}
           <div class="ctab-panel stab-panel" id="sub-review" style="flex:1;display:flex;flex-direction:column;gap:8px;overflow:hidden;">
 
-            {{-- SOAP Form (compact) --}}
-            <div class="card card-sm" style="flex-shrink:0;border-top:2px solid #206bc4 !important;">
-              <div class="card-header py-1 px-2" style="background:#f0f7ff;">
-                <span class="fw-bold text-uppercase" style="font-size:10px;color:#1a5ba8;letter-spacing:.5px;">📝 New SOAP Entry</span>
+            <!-- SOAP Entry Form -->
+            <div class="card card-sm mb-2" style="border-top: 2px solid #206bc4 !important;">
+              <div class="card-header py-1 px-2 d-flex justify-content-between align-items-center" style="background:#f8fafc;flex-shrink:0;">
+                <span class="fw-bold text-uppercase" style="font-size:10px;color:#1e293b;letter-spacing:.5px;">📝 New SOAP Entry</span>
               </div>
-              <div class="card-body px-2 pt-2 pb-1">
+              <div class="card-body p-2">
                 <form action="{{ url('/rawat-jalan/pemeriksaan/store') }}" method="POST">
                   @csrf
                   <input type="hidden" name="no_rawat" value="{{ $data->no_rawat }}">
                   <div class="row g-1 mb-1">
                     <div class="col-12">
                       <label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Subjective (Keluhan)</label>
-                      <textarea name="keluhan" rows="2" class="form-control form-control-sm" placeholder="Keluhan utama..." required></textarea>
+                      <textarea name="keluhan" rows="1" class="form-control form-control-sm" placeholder="Keluhan utama..." required style="min-height: 28px;"></textarea>
                     </div>
                   </div>
                   <div class="row g-1 mb-1">
-                    <div class="col-4"><label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Tensi</label><input type="text" name="tensi" class="form-control form-control-sm" placeholder="mmHg"></div>
-                    <div class="col-4"><label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Nadi</label><input type="text" name="nadi" class="form-control form-control-sm" placeholder="x/mnt"></div>
-                    <div class="col-4"><label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Suhu</label><input type="text" name="suhu_tubuh" class="form-control form-control-sm" placeholder="°C"></div>
+                    <div class="col-4">
+                      <label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Tensi</label>
+                      <input type="text" name="tgl_perawatan" value="{{ date('Y-m-d') }}" style="display:none;">
+                      <input type="text" name="tensi" class="form-control form-control-sm" placeholder="mmHg" style="height: 28px;">
+                    </div>
+                    <div class="col-4">
+                      <label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Nadi</label>
+                      <input type="text" name="nadi" class="form-control form-control-sm" placeholder="x/mnt" style="height: 28px;">
+                    </div>
+                    <div class="col-4">
+                      <label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Suhu</label>
+                      <input type="text" name="suhu_tubuh" class="form-control form-control-sm" placeholder="°C" style="height: 28px;">
+                    </div>
                   </div>
                   <div class="row g-1 mb-1">
                     <div class="col-12">
                       <label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Objective</label>
-                      <textarea name="pemeriksaan" rows="2" class="form-control form-control-sm" placeholder="Pemeriksaan fisik..." required></textarea>
+                      <textarea name="pemeriksaan" rows="1" class="form-control form-control-sm" placeholder="Pemeriksaan fisik..." required style="min-height: 28px;"></textarea>
                     </div>
                   </div>
                   <div class="row g-1 mb-1">
                     <div class="col-6">
                       <label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Assessment</label>
-                      <textarea name="penilaian" rows="2" class="form-control form-control-sm" required></textarea>
+                      <textarea name="penilaian" rows="1" class="form-control form-control-sm" required style="min-height: 28px;"></textarea>
                     </div>
                     <div class="col-6">
                       <label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Plan / RTL</label>
-                      <textarea name="rtl" rows="2" class="form-control form-control-sm" required></textarea>
+                      <textarea name="rtl" rows="1" class="form-control form-control-sm" required style="min-height: 28px;"></textarea>
                     </div>
                   </div>
-                  <div class="d-flex align-items-center gap-2">
-                    <div class="flex-fill">
+                  <div class="d-flex align-items-end gap-2 mt-1">
+                    <div style="flex: 1;">
                       <label style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">ICD-10</label>
-                      <input type="text" name="kd_penyakit" class="form-control form-control-sm" placeholder="Cari kode diagnosa...">
+                      <input type="text" name="kd_penyakit" class="form-control form-control-sm" placeholder="Cari kode diagnosa..." style="height: 28px;">
                     </div>
-                    <button type="submit" class="btn btn-sm btn-primary mt-3" style="white-space:nowrap;">💾 Simpan</button>
+                    <button type="submit" class="btn btn-sm btn-primary" style="white-space:nowrap; height: 28px; padding: 2px 10px;">💾 Simpan SOAP</button>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 mt-2 pt-2" style="border-top: 1px dashed #e2e8f0; font-size: 11px;">
+                    <span style="font-size: 9px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-right: 4px;">Order Penunjang:</span>
+                    <a href="{{ url('/rawat-jalan/resep/'.urlencode($data->no_rawat)) }}" class="btn btn-outline-success btn-xs" style="padding: 1px 6px; font-size: 10px;">💊 Resep</a>
+                    <a href="{{ url('/laboratorium/request/'.urlencode($data->no_rawat)) }}" class="btn btn-outline-info btn-xs text-info" style="padding: 1px 6px; font-size: 10px;">🔬 Lab</a>
+                    <a href="{{ url('/radiologi/request/'.urlencode($data->no_rawat)) }}" class="btn btn-outline-warning btn-xs text-warning" style="padding: 1px 6px; font-size: 10px;">📡 Radiologi</a>
                   </div>
                 </form>
               </div>
@@ -223,7 +239,7 @@
                   </div>
                   <div style="color:#334155;line-height:1.4;">
                     <b>S:</b> {{ Str::limit($soap->keluhan,70)??'-' }} &nbsp;
-                    <b>O:</b> {{ Str::limit($soap->pemeriksaan,60)??'-' }}<br>
+                    <b>O:</b> @if(!empty($soap->tensi))Tensi: {{ $soap->tensi }} mmHg &bull; @endif{{ Str::limit($soap->pemeriksaan,60)??'-' }}<br>
                     <b>A:</b> {{ Str::limit($soap->penilaian,50)??'-' }} &nbsp;
                     <b>P:</b> {{ Str::limit($soap->rtl,50)??'-' }}
                   </div>
@@ -296,37 +312,41 @@
       <div style="flex:1;overflow-y:auto;">
         {{-- Pending Orders --}}
         @if($lab_pending->count() > 0)
-        @php $pending = $lab_pending->first(); @endphp
         <div style="background:#fff7ed;border-bottom:1px solid #fed7aa;padding:4px 8px;">
-          <span style="font-size:10px;font-weight:700;color:#c2410c;text-transform:uppercase;letter-spacing:.4px;">⏳ Menunggu Hasil (Terbaru)</span>
+          <span style="font-size:10px;font-weight:700;color:#c2410c;text-transform:uppercase;letter-spacing:.4px;">⏳ Permintaan Lab (Pending)</span>
         </div>
-        <div class="d-flex align-items-start gap-1 p-2.5 border-bottom" style="font-size:12.5px;background:#fffbf7;">
+        @foreach($lab_pending as $pending)
+        <div class="d-flex align-items-start gap-1 p-2 border-bottom" style="font-size:11.5px;background:#fffbf7;">
           <div class="flex-fill">
             <div class="fw-semibold" style="color:#1e293b;">{{ $pending->test_names ?: '-' }}</div>
-            <div class="text-muted" style="font-size:11px;">{{ $pending->noorder }} · {{ $pending->tgl_permintaan }}</div>
+            <div class="text-muted" style="font-size:10.5px;">{{ $pending->noorder }} · {{ $pending->tgl_permintaan }}</div>
           </div>
-          <span class="badge bg-warning-lt" style="font-size:9.5px;">Order</span>
+          <span class="badge bg-warning-lt" style="font-size:9px;">Order</span>
         </div>
+        @endforeach
         @endif
+
         {{-- Completed Results --}}
         @if($lab_results->count() > 0)
-        @php $lab = $lab_results->first(); @endphp
         <div style="background:#fef2f2;border-bottom:1px solid #fecaca;padding:4px 8px;">
-          <span style="font-size:10px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:.4px;">✅ Hasil Terakhir</span>
+          <span style="font-size:10px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:.4px;">✅ Hasil Laboratorium</span>
         </div>
-        <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+        <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
           <tbody>
+            @foreach($lab_results as $lab)
             <tr>
-              <td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;color:#64748b;white-space:nowrap;">{{ $lab->tgl_periksa }}</td>
-              <td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#1e293b;">{{ $lab->item_name }}</td>
-              <td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;text-align:right;">
+              <td style="padding:5px 8px;border-bottom:1px solid #f1f5f9;color:#64748b;white-space:nowrap;">{{ $lab->tgl_periksa }}</td>
+              <td style="padding:5px 8px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#1e293b;">{{ $lab->item_name }}</td>
+              <td style="padding:5px 8px;border-bottom:1px solid #f1f5f9;text-align:right;">
                 <a href="{{ url('/laboratorium/view-hasil/'.urlencode($lab->no_rawat).'/'.urlencode($lab->tgl_periksa).'/'.urlencode($lab->jam)) }}"
-                   style="font-size:11.5px;color:#2563eb;font-weight:600;">Lihat</a>
+                   style="font-size:11px;color:#2563eb;font-weight:600;">Lihat</a>
               </td>
             </tr>
+            @endforeach
           </tbody>
         </table>
         @endif
+        
         @if($lab_pending->count() === 0 && $lab_results->count() === 0)
         <div style="padding:16px;text-align:center;color:#94a3b8;font-size:11px;font-style:italic;">Belum ada permintaan atau hasil lab.</div>
         @endif
@@ -341,17 +361,51 @@
       </div>
       <div style="flex:1;overflow-y:auto;">
         @if($rad_results->isNotEmpty())
-        @php $rad = $rad_results->first(); @endphp
-        <div class="px-3 py-2 border-bottom d-flex align-items-center" style="font-size:12.5px;">
+        @foreach($rad_results as $rad)
+        <div class="px-3 py-2 border-bottom d-flex align-items-center" style="font-size:11.5px;">
           <div style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-            <span class="text-muted me-2" style="font-size:11px;">{{ $rad->tgl_periksa }}</span>
+            <span class="text-muted me-2" style="font-size:10.5px;">{{ $rad->tgl_periksa }}</span>
             <strong class="text-dark">{{ $rad->item_name }}</strong>
-            <span class="text-muted ms-2" style="font-size:11px;">({{ $rad->examiner }})</span>
+            <span class="text-muted ms-2" style="font-size:10.5px;">({{ $rad->examiner }})</span>
           </div>
         </div>
+        @endforeach
         @else
         <div class="p-3 text-center text-muted fst-italic" style="font-size:11px;">Belum ada data radiologi.</div>
         @endif
+      </div>
+    </div>
+
+    {{-- E-Resep --}}
+    <div class="card card-sm" style="flex:1;min-height:0;display:flex;flex-direction:column;border-color:#a7f3d0 !important;">
+      <div class="card-header py-1 px-2 d-flex justify-content-between align-items-center" style="background:#ecfdf5;border-color:#a7f3d0;flex-shrink:0;">
+        <span class="fw-bold text-uppercase" style="font-size:10px;color:#047857;letter-spacing:.5px;">💊 Prescription (E-Resep)</span>
+        <span class="badge bg-success-lt" style="font-size:10px;">{{ $prescriptions->count() }}</span>
+      </div>
+      <div style="flex:1;overflow-y:auto;">
+        @forelse($prescriptions as $p)
+        <div class="p-2.5 border-bottom" style="font-size:11.5px; background: #faf5ff;">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <strong class="text-primary">{{ $p->no_resep }}</strong>
+            <span class="text-muted" style="font-size:10px;">{{ $p->tgl_peresepan }} {{ $p->jam_peresepan }}</span>
+          </div>
+          <div class="d-flex flex-column gap-1 mt-1">
+            @foreach($p->items as $item)
+            <div class="d-flex justify-content-between align-items-start py-1" style="border-bottom: 1px dashed #e2e8f0; margin-bottom: 2px;">
+              <div style="flex: 1; min-width: 0; padding-right: 8px;">
+                <div class="fw-semibold text-dark" style="font-size: 12px; line-height: 1.2;">{{ $item->nama_brng }}</div>
+                <div class="text-muted" style="font-size: 10px; margin-top: 2px;">👉 {{ $item->aturan_pakai }}</div>
+              </div>
+              <div class="text-end" style="flex-shrink: 0;">
+                <span class="badge bg-success-lt fw-bold" style="font-size: 10px; padding: 2px 6px; color: #047857;">Qty: {{ $item->jml }}</span>
+              </div>
+            </div>
+            @endforeach
+          </div>
+        </div>
+        @empty
+        <div class="p-3 text-center text-muted fst-italic" style="font-size:11px;">Belum ada resep obat.</div>
+        @endforelse
       </div>
     </div>
 

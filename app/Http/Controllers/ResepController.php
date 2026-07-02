@@ -68,9 +68,10 @@ class ResepController extends Controller
 
         // Get 100 medications for selection
         $obat = DB::table('databarang')
-            ->where('status', '1')
-            ->select('kode_brng', 'nama_brng', 'ralan')
-            ->orderBy('nama_brng', 'asc')
+            ->leftJoin('kodesatuan', 'databarang.kode_sat', '=', 'kodesatuan.kode_sat')
+            ->where('databarang.status', '1')
+            ->select('databarang.kode_brng', 'databarang.nama_brng', 'databarang.ralan', 'kodesatuan.satuan')
+            ->orderBy('databarang.nama_brng', 'asc')
             ->limit(100)
             ->get();
 
@@ -156,13 +157,14 @@ class ResepController extends Controller
         }
 
         $results = DB::table('databarang')
-            ->where('status', '1')
+            ->leftJoin('kodesatuan', 'databarang.kode_sat', '=', 'kodesatuan.kode_sat')
+            ->where('databarang.status', '1')
             ->where(function ($query) use ($q) {
-                $query->whereRaw('LOWER(nama_brng) LIKE ?', ['%' . strtolower($q) . '%'])
-                      ->orWhereRaw('LOWER(kode_brng) LIKE ?', ['%' . strtolower($q) . '%']);
+                $query->whereRaw('LOWER(databarang.nama_brng) LIKE ?', ['%' . strtolower($q) . '%'])
+                      ->orWhereRaw('LOWER(databarang.kode_brng) LIKE ?', ['%' . strtolower($q) . '%']);
             })
-            ->select('kode_brng', 'nama_brng', 'kode_sat')
-            ->orderBy('nama_brng', 'asc')
+            ->select('databarang.kode_brng', 'databarang.nama_brng', 'kodesatuan.satuan as kode_sat')
+            ->orderBy('databarang.nama_brng', 'asc')
             ->limit(25)
             ->get();
 
@@ -179,6 +181,20 @@ class ResepController extends Controller
             return redirect()->back()->with('success', 'Obat telah diserahkan ke pasien.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal update penyerahan: ' . $e->getMessage());
+        }
+    }
+
+    public function cancelResep($no_resep)
+    {
+        try {
+            DB::beginTransaction();
+            DB::table('resep_dokter')->where('no_resep', $no_resep)->delete();
+            DB::table('resep_obat')->where('no_resep', $no_resep)->delete();
+            DB::commit();
+            return redirect()->back()->with('success', 'Resep ' . $no_resep . ' berhasil dibatalkan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal membatalkan resep: ' . $e->getMessage());
         }
     }
 }

@@ -220,6 +220,7 @@
                         <th>Alamat</th>
                         <th>No. Telepon</th>
                         <th>Status</th>
+                        <th width="80" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -282,11 +283,75 @@
                             <td>
                                 <span class="badge badge-success">Terdaftar</span>
                             </td>
+                            <td class="text-center" onclick="event.stopPropagation();">
+                                <button type="button" class="btn btn-ghost-secondary btn-icon btn-sm" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#edit-pasien-{{ $d->no_rkm_medis }}" 
+                                        title="Edit Pasien">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                    </svg>
+                                </button>
+                                
+                                <!-- Modal Edit Pasien -->
+                                <div class="modal modal-blur fade" id="edit-pasien-{{ $d->no_rkm_medis }}" tabindex="-1" role="dialog" aria-hidden="true" style="text-align: left;">
+                                  <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+                                    <div class="modal-content">
+                                      <form action="{{ url('/master/pasien/' . $d->no_rkm_medis) }}" method="POST">
+                                        @csrf
+                                        @method('PUT')
+                                        <div class="modal-header">
+                                          <h5 class="modal-title fw-bold">Edit Data Pasien</h5>
+                                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                          <div class="mb-3">
+                                            <label class="form-label required">Nama Pasien</label>
+                                            <input type="text" class="form-control" name="nm_pasien" value="{{ $d->nm_pasien }}" required>
+                                          </div>
+                                          <div class="row g-2 mb-3">
+                                            <div class="col-6">
+                                              <label class="form-label">NIK (No. KTP)</label>
+                                              <input type="text" class="form-control" name="no_ktp" value="{{ $d->no_ktp }}">
+                                            </div>
+                                            <div class="col-6">
+                                              <label class="form-label required">Jenis Kelamin</label>
+                                              <select class="form-select" name="jk" required>
+                                                <option value="L" {{ $d->jk == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                                                <option value="P" {{ $d->jk == 'P' ? 'selected' : '' }}>Perempuan</option>
+                                              </select>
+                                            </div>
+                                          </div>
+                                          <div class="row g-2 mb-3">
+                                            <div class="col-6">
+                                              <label class="form-label required">Tanggal Lahir</label>
+                                              <input type="date" class="form-control" name="tgl_lahir" value="{{ $d->tgl_lahir }}" required>
+                                            </div>
+                                            <div class="col-6">
+                                              <label class="form-label">No. Telepon</label>
+                                              <input type="text" class="form-control" name="no_tlp" value="{{ $d->no_tlp }}">
+                                            </div>
+                                          </div>
+                                          <div class="mb-0">
+                                            <label class="form-label">Alamat</label>
+                                            <textarea class="form-control" name="alamat" rows="3">{{ $d->alamat }}</textarea>
+                                          </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                          <button type="button" class="btn btn-link link-secondary me-auto" data-bs-dismiss="modal">Batal</button>
+                                          <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                                        </div>
+                                      </form>
+                                    </div>
+                                  </div>
+                                </div>
+                            </td>
                         </tr>
                         @endforeach
                     @else
                         <tr>
-                            <td colspan="9" class="text-center py-4">
+                            <td colspan="11" class="text-center py-4">
                                 @if($search ?? '')
                                     <div class="text-muted">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="mb-2">

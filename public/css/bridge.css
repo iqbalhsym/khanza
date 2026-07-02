@@ -572,7 +572,7 @@ body {
 }
 .table-wrapper, .table-responsive {
   border-radius: 12px !important;
-  overflow: hidden !important;
+  overflow-x: auto !important;
 }
 
 /* =====================================================
@@ -846,7 +846,9 @@ body {
    PREMIUM STICKY RIGHT COLUMN (PREVENT DATA OVERLAP)
    ===================================================== */
 .table-wrapper th.sticky-right,
-.table-wrapper td.sticky-right {
+.table-wrapper td.sticky-right,
+.table-responsive th.sticky-right,
+.table-responsive td.sticky-right {
   position: sticky !important;
   right: 0 !important;
   z-index: 10 !important;
@@ -854,15 +856,18 @@ body {
   box-shadow: -6px 0 12px rgba(0, 0, 0, 0.04) !important;
 }
 
-.table-wrapper th.sticky-right {
+.table-wrapper th.sticky-right,
+.table-responsive th.sticky-right {
   background-color: #f8fafc !important;
 }
 
-.table-wrapper td.sticky-right {
+.table-wrapper td.sticky-right,
+.table-responsive td.sticky-right {
   background-color: #ffffff !important;
 }
 
 /* Hover state matching */
-.table-wrapper tbody tr:hover td.sticky-right {
+.table-wrapper tbody tr:hover td.sticky-right,
+.table-responsive tbody tr:hover td.sticky-right {
   background-color: #f1f5f9 !important;
 }

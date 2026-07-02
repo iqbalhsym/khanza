@@ -111,6 +111,7 @@
                         <th style="text-align:right">Kelas 1</th>
                         <th style="text-align:right">Utama/VIP</th>
                         <th>Status</th>
+                        <th width="80" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -130,11 +131,71 @@
                                     <span class="badge badge-red">Non-Aktif</span>
                                 @endif
                             </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-ghost-secondary btn-icon btn-sm" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#edit-obat-{{ $d->kode_brng }}" 
+                                        title="Edit Obat">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                    </svg>
+                                </button>
+                                
+                                <!-- Modal Edit Obat -->
+                                <div class="modal modal-blur fade" id="edit-obat-{{ $d->kode_brng }}" tabindex="-1" role="dialog" aria-hidden="true">
+                                  <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+                                    <div class="modal-content">
+                                      <form action="{{ url('/master/obat/' . $d->kode_brng) }}" method="POST">
+                                        @csrf
+                                        @method('PUT')
+                                        <div class="modal-header">
+                                          <h5 class="modal-title fw-bold">Edit Data Obat</h5>
+                                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-start" style="text-align: left;">
+                                          <div class="mb-3">
+                                            <label class="form-label required">Nama Barang / Obat</label>
+                                            <input type="text" class="form-control" name="nama_brng" value="{{ $d->nama_brng }}" required>
+                                          </div>
+                                          <div class="row g-2 mb-3">
+                                            <div class="col-6">
+                                              <label class="form-label required">Harga Ralan</label>
+                                              <input type="number" class="form-control" name="ralan" value="{{ $d->ralan }}" required min="0">
+                                            </div>
+                                            <div class="col-6">
+                                              <label class="form-label required">Harga Kelas 1</label>
+                                              <input type="number" class="form-control" name="kelas1" value="{{ $d->kelas1 }}" required min="0">
+                                            </div>
+                                          </div>
+                                          <div class="row g-2 mb-3">
+                                            <div class="col-6">
+                                              <label class="form-label required">Harga VIP</label>
+                                              <input type="number" class="form-control" name="vip" value="{{ $d->vip }}" required min="0">
+                                            </div>
+                                            <div class="col-6">
+                                              <label class="form-label required">Status</label>
+                                              <select class="form-select" name="status" required>
+                                                <option value="1" {{ $d->status == '1' ? 'selected' : '' }}>Aktif</option>
+                                                <option value="0" {{ $d->status != '1' ? 'selected' : '' }}>Tidak Aktif</option>
+                                              </select>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                          <button type="button" class="btn btn-link link-secondary me-auto" data-bs-dismiss="modal">Batal</button>
+                                          <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                                        </div>
+                                      </form>
+                                    </div>
+                                  </div>
+                                </div>
+                            </td>
                         </tr>
                         @endforeach
                     @else
                         <tr>
-                            <td colspan="7" class="text-center py-4">
+                            <td colspan="8" class="text-center py-4">
                                 @if($search ?? '')
                                     <div class="text-muted">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="mb-2">

@@ -71,10 +71,17 @@
                     </td>
                     <td>
                         @if($r->tgl_penyerahan == '0000-00-00' || $r->tgl_penyerahan == '1000-01-01' || empty($r->tgl_penyerahan))
-                        <form action="{{ url('/farmasi/dispense/' . $r->no_resep) }}" method="POST">
-                            @csrf
-                            <button type="submit" class="btn btn-primary btn-sm">Serahkan Obat</button>
-                        </form>
+                        <div class="d-flex align-items-center gap-2">
+                            <form action="{{ url('/farmasi/dispense/' . $r->no_resep) }}" method="POST" style="margin:0;">
+                                @csrf
+                                <button type="submit" class="btn btn-primary btn-sm">Serahkan Obat</button>
+                            </form>
+                            <form action="{{ url('/farmasi/cancel/' . $r->no_resep) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan resep {{ $r->no_resep }}?')" style="margin:0;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Batalkan</button>
+                            </form>
+                        </div>
                         @else
                             <button class="btn btn-ghost btn-sm" disabled>Sudah Diserahkan</button>
                         @endif

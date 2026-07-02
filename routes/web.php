@@ -73,6 +73,7 @@ Route::middleware('auth.session')->group(function () {
         Route::get('/', [App\Http\Controllers\ResepController::class, 'index']);
         Route::get('/stok', [App\Http\Controllers\FarmasiController::class, 'stok']);
         Route::post('/dispense/{no_resep}', [App\Http\Controllers\ResepController::class, 'dispense']);
+        Route::delete('/cancel/{no_resep}', [App\Http\Controllers\ResepController::class, 'cancelResep']);
     });
 
     // Billing / Kasir
@@ -114,10 +115,14 @@ Route::middleware('auth.session')->group(function () {
     Route::prefix('master')->middleware('role:master_data')->group(function () {
         Route::get('/',        [App\Http\Controllers\MasterController::class, 'pasien']); // Default to pasien
         Route::get('/pasien',  [App\Http\Controllers\MasterController::class, 'pasien']);
+        Route::put('/pasien/{id}', [App\Http\Controllers\MasterController::class, 'updatePasien']);
         Route::get('/dokter',  [App\Http\Controllers\MasterController::class, 'dokter']);
         Route::post('/dokter/toggle-status/{kd_dokter}', [App\Http\Controllers\MasterController::class, 'toggleStatus']);
+        Route::put('/dokter/{id}', [App\Http\Controllers\MasterController::class, 'updateDokter']);
         Route::get('/poli',    [App\Http\Controllers\MasterController::class, 'poli']);
+        Route::put('/poli/{id}',   [App\Http\Controllers\MasterController::class, 'updatePoli']);
         Route::get('/obat',    [App\Http\Controllers\MasterController::class, 'obat']);
+        Route::put('/obat/{id}',   [App\Http\Controllers\MasterController::class, 'updateObat']);
         Route::get('/kamar',   [App\Http\Controllers\MasterController::class, 'kamar']);
         Route::get('/tarif',   [App\Http\Controllers\MasterController::class, 'tarif']);
         Route::get('/aset',    [App\Http\Controllers\MasterController::class, 'aset']);

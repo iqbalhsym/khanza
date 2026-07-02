@@ -102,7 +102,7 @@ class RawatJalanController extends Controller
         ));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         // Untuk MVP, kita sediakan opsi cari 100 pasien terakhir agar form tidak terlalu berat
         $pasien = \DB::table('pasien')
@@ -115,7 +115,17 @@ class RawatJalanController extends Controller
         $dokter = DB::connection('dokter')->table('dokter')->where('status', '1')->get();
         $penjab = \DB::table('penjab')->where('status', '1')->get();
 
-        return view('rawat_jalan.create', compact('pasien', 'poliklinik', 'dokter', 'penjab'));
+        // Ambil data pasien lengkap jika dikirim parameter no_rkm_medis
+        $selectedPasien = null;
+        if ($request->filled('no_rkm_medis')) {
+            $selectedPasien = \DB::table('pasien')
+                ->leftJoin('penjab', 'pasien.kd_pj', '=', 'penjab.kd_pj')
+                ->where('no_rkm_medis', $request->no_rkm_medis)
+                ->select('pasien.*', 'penjab.png_jawab')
+                ->first();
+        }
+
+        return view('rawat_jalan.create', compact('pasien', 'poliklinik', 'dokter', 'penjab', 'selectedPasien'));
     }
 
     public function store(Request $request)
@@ -385,9 +395,24 @@ class RawatJalanController extends Controller
             $rad->examiner = $rad_docs[$rad->kd_dokter] ?? '-';
         }
 
+        // Fetch Prescriptions (E-Resep) - Tanpa join dokter
+        $prescriptions = \DB::table('resep_obat')
+            ->where('no_rawat', $no_rawat)
+            ->orderBy('tgl_peresepan', 'desc')
+            ->orderBy('jam_peresepan', 'desc')
+            ->get();
+            
+        foreach ($prescriptions as $p) {
+            $p->items = \DB::table('resep_dokter')
+                ->join('databarang', 'resep_dokter.kode_brng', '=', 'databarang.kode_brng')
+                ->where('no_resep', $p->no_resep)
+                ->select('databarang.nama_brng', 'resep_dokter.jml', 'resep_dokter.aturan_pakai')
+                ->get();
+        }
+
         return view('rawat_jalan.detail_registered', compact(
             'data', 'dpjp_tambahan', 'dokters', 'identifications', 'allergies',
-            'soap_history', 'lab_results', 'lab_pending', 'rad_results'
+            'soap_history', 'lab_results', 'lab_pending', 'rad_results', 'prescriptions'
         ));
     }
 
