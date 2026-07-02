@@ -6,7 +6,7 @@
 @section('content')
 <div class="row row-title align-items-center mb-3">
   <div class="col">
-    <h1 class="h2">Selamat Datang, Administrator 👋</h1>
+    <h1 class="h2">Selamat Datang, {{ session('user') ? session('user')->role_name : 'Pengguna' }} 👋</h1>
     <p class="text-muted">Berikut ringkasan aktifitas rumah sakit hari ini, {{ date('d F Y') }}</p>
   </div>
   <div class="col-auto">
