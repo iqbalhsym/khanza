@@ -119,7 +119,7 @@
 
 <div class="row row-cards mt-1">
   <!-- Left Side: Pasien Ralan -->
-  <div class="col-lg-8">
+  <div class="col-12">
     <div class="card">
       <div class="card-header">
         <h3 class="card-title">Antrian Teratas Rawat Jalan</h3>
@@ -160,71 +160,6 @@
             @endforeach
           </tbody>
         </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Right Side: Recent Activity -->
-  <div class="col-lg-4">
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">Aktivitas Terkini</h3>
-      </div>
-      <div class="card-body">
-        <ul class="steps steps-vertical">
-          <li class="step-item">
-            <div class="h4 m-0">Pasien RM-2024-006 Selesai</div>
-            <div class="text-muted small">Poli Kandungan – dr. Fitri</div>
-            <div class="text-muted small">10:45 WIB</div>
-          </li>
-          <li class="step-item">
-            <div class="h4 m-0">Resep baru dari dr. Budi</div>
-            <div class="text-muted small">Farmasi – 3 item obat</div>
-            <div class="text-muted small">10:32 WIB</div>
-          </li>
-          <li class="step-item active">
-            <div class="h4 m-0">Pasien baru masuk Rawat Inap</div>
-            <div class="text-muted small">Kelas II – Kamar 215</div>
-            <div class="text-muted small">10:15 WIB</div>
-          </li>
-          <li class="step-item">
-            <div class="h4 m-0">Hasil Lab siap</div>
-            <div class="text-muted small">Pasien RM-2024-001</div>
-            <div class="text-muted small">09:58 WIB</div>
-          </li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Bed Capacity -->
-    <div class="card mt-3">
-      <div class="card-header">
-        <h3 class="card-title">Ketersediaan Bed</h3>
-      </div>
-      <div class="card-body">
-         @php
-          $bangsal = [
-            ['nama'=>'VVIP/VIP','total'=>10,'terisi'=>8],
-            ['nama'=>'Kelas I','total'=>20,'terisi'=>15],
-            ['nama'=>'Kelas II','total'=>30,'terisi'=>18],
-            ['nama'=>'Kelas III','total'=>40,'terisi'=>12]
-          ];
-        @endphp
-        @foreach($bangsal as $b)
-        @php $pct = round(($b['terisi']/$b['total'])*100); @endphp
-        <div class="mb-3">
-          <div class="d-flex mb-1">
-            <div>{{ $b['nama'] }}</div>
-            <div class="ms-auto">
-              <span class="text-muted">{{ $b['terisi'] }}/{{ $b['total'] }}</span>
-            </div>
-          </div>
-          <div class="progress progress-sm">
-            <div class="progress-bar bg-{{ $pct > 80 ? 'danger' : 'primary' }}" style="width: {{ $pct }}%" role="progressbar" aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100">
-            </div>
-          </div>
-        </div>
-        @endforeach
       </div>
     </div>
   </div>
