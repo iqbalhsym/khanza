@@ -89,9 +89,13 @@ class PasienController extends Controller
         try {
             $fileName = null;
             if ($request->hasFile('data_pendukung')) {
+                $uploadPath = public_path('uploads/data_pendukung');
+                if (!file_exists($uploadPath)) {
+                    @mkdir($uploadPath, 0775, true);
+                }
                 $file = $request->file('data_pendukung');
                 $fileName = time() . '_' . preg_replace('/[^A-Za-z0-9\._-]/', '', $file->getClientOriginalName());
-                $file->move(public_path('uploads/data_pendukung'), $fileName);
+                $file->move($uploadPath, $fileName);
             }
 
             // Kolom-kolom wajib dan varchar aman selalu dimasukkan
@@ -256,9 +260,13 @@ class PasienController extends Controller
                     @unlink(public_path('uploads/data_pendukung/' . $oldFile));
                 }
 
+                $uploadPath = public_path('uploads/data_pendukung');
+                if (!file_exists($uploadPath)) {
+                    @mkdir($uploadPath, 0775, true);
+                }
                 $file = $request->file('data_pendukung');
                 $fileName = time() . '_' . preg_replace('/[^A-Za-z0-9\._-]/', '', $file->getClientOriginalName());
-                $file->move(public_path('uploads/data_pendukung'), $fileName);
+                $file->move($uploadPath, $fileName);
                 $data['data_pendukung'] = $fileName;
             }
 
