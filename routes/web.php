@@ -132,6 +132,7 @@ Route::middleware('auth.session')->group(function () {
         Route::post('/pengaturan/users', [App\Http\Controllers\PengaturanController::class, 'storeUser']);
         Route::put('/pengaturan/users/{id}', [App\Http\Controllers\PengaturanController::class, 'updateUser']);
         Route::delete('/pengaturan/users/{id}', [App\Http\Controllers\PengaturanController::class, 'destroyUser']);
+        Route::post('/pengaturan/roles', [App\Http\Controllers\PengaturanController::class, 'storeRole']);
         Route::put('/pengaturan/roles/{id}', [App\Http\Controllers\PengaturanController::class, 'updateRolePermissions']);
     });
 

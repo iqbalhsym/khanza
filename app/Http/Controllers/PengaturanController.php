@@ -145,4 +145,33 @@ class PengaturanController extends Controller
 
         return redirect('/pengaturan')->with('success', 'Hak akses role ' . $role->name . ' berhasil diperbarui.');
     }
+
+    /**
+     * Store a newly created role in the database.
+     */
+    public function storeRole(Request $request)
+    {
+        // Limit access to Super Admin only
+        if (!session('user') || session('user')->role_name !== 'Super Admin') {
+            return redirect('/pengaturan')->with('error', 'Hanya Super Admin yang dapat menambahkan role baru.');
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255|unique:roles,name',
+            'permissions' => 'nullable|array',
+        ]);
+
+        // Default to dashboard permission if none is selected
+        $permissions = $request->input('permissions', ['dashboard']);
+        if (!in_array('dashboard', $permissions)) {
+            $permissions[] = 'dashboard';
+        }
+
+        Role::create([
+            'name' => $request->name,
+            'permissions' => $permissions,
+        ]);
+
+        return redirect('/pengaturan')->with('success', 'Role ' . $request->name . ' berhasil ditambahkan.');
+    }
 }

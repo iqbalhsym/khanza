@@ -246,8 +246,14 @@
          ============================================== -->
     <div class="tab-pane" id="tabs-roles" role="tabpanel">
       <div class="card-body p-0">
-        <div class="p-3 bg-light">
+        <div class="p-3 bg-light d-flex align-items-center justify-content-between flex-wrap gap-2">
           <span class="text-muted" style="font-size: 13px;">Tentukan menu navigasi dan hak akses fitur per-modul yang dapat dibuka oleh masing-masing Role.</span>
+          @if(session('user') && session('user')->role_name === 'Super Admin')
+            <button class="btn btn-primary d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modal-add-role">
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+              Tambah Role
+            </button>
+          @endif
         </div>
 
         <!-- Table Roles -->
@@ -411,6 +417,50 @@
     </div>
   </div>
 </div>
+
+@if(session('user') && session('user')->role_name === 'Super Admin')
+<!-- ==============================================
+     MODAL ADD ROLE (GLOBAL)
+     ============================================== -->
+<div class="modal modal-blur fade" id="modal-add-role" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+    <div class="modal-content border-0 shadow-lg">
+      <form action="{{ url('/pengaturan/roles') }}" method="POST">
+        @csrf
+        <div class="modal-header bg-light border-0">
+          <h5 class="modal-title fw-bold text-dark">Tambah Role Baru</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label required">Nama Role</label>
+            <input type="text" class="form-control" name="name" placeholder="Contoh: Perawat Gigi, Staf IT, dll." required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label font-weight-bold text-dark mb-2">Hak Akses Modul</label>
+            <div class="text-muted mb-3" style="font-size: 12px;">Pilih modul yang diizinkan untuk diakses oleh role baru ini:</div>
+            <div class="row">
+              @foreach($allPermissions as $key => $label)
+              <div class="col-md-6 mb-2">
+                <label class="form-check form-check-inline m-0">
+                  <input class="form-check-input" type="checkbox" name="permissions[]" value="{{ $key }}"
+                    {{ $key === 'dashboard' ? 'checked onclick="return false;"' : '' }}>
+                  <span class="form-check-label text-dark" style="font-size: 13px;">{{ $label }}</span>
+                </label>
+              </div>
+              @endforeach
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light border-0">
+          <button type="button" class="btn btn-link link-secondary me-auto" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary shadow-sm">Simpan Role</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+@endif
 
 @push('styles')
 <!-- Tom Select CSS -->
